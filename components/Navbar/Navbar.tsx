@@ -107,7 +107,7 @@ const Navbar = ({ toggleModal, dark }: NavBarProps) => {
                         BLOG
                     </NavbarItem> */}
                         <NavbarItem href={"/careers"} toggle={closeMobile}>
-                            GET INVOLVED
+                            JOIN US
                         </NavbarItem>
                         <NavbarItem href={"/sponsor"} toggle={closeMobile}>
                             SPONSORS
