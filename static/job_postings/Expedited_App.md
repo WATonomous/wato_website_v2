@@ -1,6 +1,6 @@
 ---
 title: "Expedited Admission"
-team: "Robotics Engineering"
+team: "General Member"
 subteam: "Engineering"
 location: "Waterloo, ON"
 type: "Full Time"

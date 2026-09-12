@@ -54,7 +54,7 @@ const apply = async (req: NextApiRequest, res: NextApiResponse) => {
                 body["row"][0][0] === "Expedited_App"
                     ? EXPEDITED_ID
                     : ROLLING_ID,
-            range: "Sheet1!A1:L1",
+            range: "Sheet1!A1:M1",
             valueInputOption: "USER_ENTERED",
             insertDataOption: "OVERWRITE",
             resource: {

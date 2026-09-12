@@ -1,6 +1,6 @@
 ---
 title: "Rolling Admission"
-team: "Robotics Engineering"
+team: "General Member"
 subteam: "General Application"
 location: "Waterloo, ON"
 type: "Full Time"
