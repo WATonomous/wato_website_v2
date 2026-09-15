@@ -267,6 +267,7 @@ const JobForm = ({ id }: JobFormProps) => {
                             "Rover",
                             "Micro Autonomy",
                             "Mate Rov",
+                            "WATcloud",
                         ]}
                         placeholder="Select a team"
                         formData={formData}

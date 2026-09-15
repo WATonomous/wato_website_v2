@@ -1,16 +1,16 @@
 ---
-title: "Expedited Admission"
+title: "General Admission"
 team: "General Member"
-subteam: "Engineering"
+subteam: "General Application"
 location: "Waterloo, ON"
 type: "Full Time"
 ---
 
-> **Note:** This is a fixed window application where applicants will be given priority over rolling admissions. The purpose of this application is to help streamline WATonomous's onboarding process while limiting inefficiencies with our member infrastructure.
+> **Note:** This is WATonomous's general admission application. The purpose of this application is to help streamline WATonomous's onboarding process while limiting inefficiencies with our member infrastructure.
 
-During the expedited admissions process, we will give all applicants a fair chance at entering the team. The chances of you joining the team are purely within your control. Outside of this window, WATonomous will consider applicants based on the qualifications below.
+During general admission, we will give all applicants a fair chance at entering the team. The chances of you joining the team are purely within your control.
 
-**This current expedited admissions window will be from September 3, 2025 to 11:59pm EST on September 12, 2025.** If you have missed the deadline, please submit to our rolling admission.
+**Admissions end September 18, 2026 at 11:59pm EST.**
 
 ## Description
 

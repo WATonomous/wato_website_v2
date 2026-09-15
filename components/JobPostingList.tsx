@@ -12,21 +12,7 @@ interface AccordionItem {
 }
 
 const JobPostingList = ({ data }: JobPostingListProps) => {
-    const accordionData: AccordionItem[] = [
-        {
-            title: "WATcloud",
-            elements: [
-                <Card
-                    key={"Infra"}
-                    title={"WATcloud Engineer"}
-                    subtitle={`Cloud - General Application`}
-                    body={["Waterloo, ON", "Full Time"]}
-                    cta={"Apply"}
-                    buttonLink={`https://cloud.watonomous.ca/get-involved/join`}
-                />,
-            ],
-        },
-    ];
+    const accordionData: AccordionItem[] = [];
 
     for (const team in data) {
         accordionData.push({
@@ -56,6 +42,20 @@ const JobPostingList = ({ data }: JobPostingListProps) => {
                 Open Roles
             </div>
             <AccordionContainer data={accordionData} />
+            <div className="mt-10 rounded-md border border-wato-teal bg-wato-grey-clear px-6 py-5 text-center text-white">
+                <h2 className="text-xl font-bold">
+                    Interested in Website, Sales, or Graphic Design?
+                </h2>
+                <p className="mt-2 text-base">
+                    Reach out directly and tell us how you would like to contribute.
+                </p>
+                <a
+                    href="mailto:hello@watonomous.ca"
+                    className="mt-4 inline-block font-medium text-wato-teal hover:text-white"
+                >
+                    hello@watonomous.ca
+                </a>
+            </div>
             </div>
         </div>
     );

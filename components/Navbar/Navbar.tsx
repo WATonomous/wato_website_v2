@@ -157,6 +157,11 @@ const Navbar = ({ toggleModal, dark }: NavBarProps) => {
                             label="Instagram"
                         />
                         <NavbarIconItem
+                            href={"https://discord.com/invite/hEX5Q4KDYN"}
+                            icon={"fa-discord"}
+                            label="Discord"
+                        />
+                        <NavbarIconItem
                             href={
                                 "https://www.linkedin.com/company/watonomous/"
                             }
