@@ -87,8 +87,8 @@ const Careers = ({ allPostingsData }: JobPostingPageProps) => {
         image={heroimg}
         title={PAGE_TITLE}
         subtitle={HERO_TEXT}
-        cta={"Open Roles"}
-        link={"#open-roles"}
+        cta={"Apply Now"}
+        link={"/careers/general-app"}
         fixed
       />
       <ContentPane
