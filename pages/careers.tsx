@@ -12,7 +12,6 @@ import img03 from "../public/imgs/jobpostings-03.jpg";
 
 import imgpane01 from "../public/imgs/jobpostings-pane1.jpg";
 import imgpane02 from "../public/imgs/all_logos.png";
-import imgpane03 from "../public/imgs/jobpostings-pane3.jpg";
 
 import heroimg from "../public/imgs/jobpostings-hero.jpg"
 import Hero from "../components/Hero";
@@ -57,10 +56,6 @@ const PANE2_TITLE = "Proud of our Alumni";
 const PANE2_SUBTITLE = "WATonomous members are everywhere!";
 const PANE2_CONTENT = `Members of WATonomous frequently go on to shape the future of robotics, AI, and autonomous technology at cutting-edge companies and research institutions. Their journeys highlight the transformative impact of hands-on experience, mentorship, and collaboration gained through our community. By staying connected with alumni, current members can draw inspiration, seek guidance, and envision their own path toward making meaningful contributions to the field.`;
 
-const PANE3_TITLE = "Leadership";
-const PANE3_SUBTITLE = "Anyone can be a lead at WATonomous";
-const PANE3_CONTENT = `We believe that leaders emerge through initiative, creativity, and the willingness to support others. Effective leaders model the team’s core values—embracing challenges, proactiveness, and fostering a sense of belonging. Whether it’s guiding a project from concept to completion, mentoring newer members, or facilitating cross-team collaboration, strong leadership ensures that every individual can grow, contribute, and thrive within our community.`;
-
 const DeckData = [
     {
         title: "Develop your Skills",
@@ -92,8 +87,8 @@ const Careers = ({ allPostingsData }: JobPostingPageProps) => {
         image={heroimg}
         title={PAGE_TITLE}
         subtitle={HERO_TEXT}
-        cta={"Open Roles"}
-        link={"#open-roles"}
+        cta={"Apply Now"}
+        link={"/careers/general-app"}
         fixed
       />
       <ContentPane
@@ -125,14 +120,6 @@ const Careers = ({ allPostingsData }: JobPostingPageProps) => {
         leftOriented={false}
       >
         {PANE2_CONTENT}
-      </ContentPane>
-      <ContentPane
-        title={PANE3_TITLE}
-        subtitle={PANE3_SUBTITLE}
-        img={imgpane03}
-        leftOriented={true}
-      >
-        {PANE3_CONTENT}
       </ContentPane>
       <JobPostingList data={allPostingsData} />
     </>

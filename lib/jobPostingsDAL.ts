@@ -13,6 +13,7 @@ interface JobPostingId {
 }
 
 const PATH = path.join(process.cwd(), "/static/job_postings");
+const EXCLUDED_TEAMS = new Set(["Business Operations", "Leadership and Management"]);
 
 export const getPostings = () => {
     const files = fs.readdirSync(PATH);
@@ -23,6 +24,8 @@ export const getPostings = () => {
         const content = fs.readFileSync(filePath, "utf8");
         const parsedContent = matter(content);
         parsedContent.orig = "";
+
+        if (EXCLUDED_TEAMS.has(parsedContent.data.team)) return;
 
         if (!(parsedContent.data.team in categories)) {
             categories[parsedContent.data.team] = [];
@@ -43,13 +46,21 @@ export const getPostings = () => {
 
 export const getPostIds = (): JobPostingId[] => {
     const fileNames = fs.readdirSync(PATH);
-    return fileNames.map((filename) => {
-        return {
-            params: {
-                id: filename.replace(/\.md$/, ""),
-            },
-        };
-    });
+    return fileNames.reduce<JobPostingId[]>((postIds, filename) => {
+        const filePath = path.join(PATH, filename);
+        const content = fs.readFileSync(filePath, "utf8");
+        const parsedContent = matter(content);
+
+        if (!EXCLUDED_TEAMS.has(parsedContent.data.team)) {
+            postIds.push({
+                params: {
+                    id: filename.replace(/\.md$/, ""),
+                },
+            });
+        }
+
+        return postIds;
+    }, []);
 };
 
 export const getPostData = async (id: string): Promise<JobPostingData> => {

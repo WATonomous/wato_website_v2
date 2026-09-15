@@ -5,6 +5,7 @@ interface FormDropdownProps {
     title: string;
     span?: boolean;
     options: string[];
+    placeholder?: string;
     formData: Record<string, unknown>;
     onFormChange: ChangeEventHandler;
 }
@@ -14,6 +15,7 @@ const FormDropdown = ({
     title,
     span,
     options,
+    placeholder,
     formData,
     onFormChange,
 }: FormDropdownProps) => {
@@ -29,9 +31,14 @@ const FormDropdown = ({
                 className="mt-2 w-full rounded-md bg-wato-white-bone p-1 text-base text-wato-black"
                 onChange={onFormChange}
                 name={id}
-                value={(formData[id] as string) || options[0]}
+                value={(formData[id] as string) || (placeholder ? "" : options[0])}
                 required
             >
+                {placeholder && (
+                    <option value="" disabled>
+                        {placeholder}
+                    </option>
+                )}
                 {options.map((o) => {
                     return (
                         <option value={o} key={o}>

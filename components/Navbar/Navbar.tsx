@@ -107,7 +107,7 @@ const Navbar = ({ toggleModal, dark }: NavBarProps) => {
                         BLOG
                     </NavbarItem> */}
                         <NavbarItem href={"/careers"} toggle={closeMobile}>
-                            GET INVOLVED
+                            JOIN US
                         </NavbarItem>
                         <NavbarItem href={"/sponsor"} toggle={closeMobile}>
                             SPONSORS
@@ -155,6 +155,11 @@ const Navbar = ({ toggleModal, dark }: NavBarProps) => {
                             href={"https://www.instagram.com/watonomous"}
                             icon={"fa-instagram"}
                             label="Instagram"
+                        />
+                        <NavbarIconItem
+                            href={"https://discord.com/invite/hEX5Q4KDYN"}
+                            icon={"fa-discord"}
+                            label="Discord"
                         />
                         <NavbarIconItem
                             href={

@@ -25,6 +25,7 @@ const fields = [
     "schoolTerm",
     "termType",
     "inPerson",
+    "teamPreference",
     "team",
 ];
 
@@ -40,6 +41,7 @@ const titles = [
     "Last School Term Completed",
     "Term Type Next Term",
     "Will You be in Waterloo Next Term?",
+    "Which WATonomous Team Would You Like to Join?",
     "Where You'd Like to Contribute",
 ];
 
@@ -84,6 +86,7 @@ const JobForm = ({ id }: JobFormProps) => {
         urls: [],
         termType: "School",
         inPerson: "Yes",
+        teamPreference: "",
         devotion: 1,
         team: [],
     };
@@ -255,6 +258,22 @@ const JobForm = ({ id }: JobFormProps) => {
                         onFormChange={onFormChange}
                     />
 
+                    <FormDropdown
+                        id={fields[11]}
+                        title={titles[11]}
+                        options={[
+                            "EVE",
+                            "Humanoid",
+                            "Rover",
+                            "Micro Autonomy",
+                            "Mate Rov",
+                            "WATcloud",
+                        ]}
+                        placeholder="Select a team"
+                        formData={formData}
+                        onFormChange={onFormChange}
+                    />
+
                     {/* <FormRange
                         id={fields[11]}
                         title={titles[11]}
@@ -269,11 +288,11 @@ const JobForm = ({ id }: JobFormProps) => {
                     {/* dirty workaround to get the clickoutside working */}
                     <div className="col-span-2">
                         <div className="my-2 text-sm font-medium">
-                            {titles[11]}
+                            {titles[12]}
                             <span className="text-red-400">*</span>
                         </div>
                         <MultiSelectDropdown
-                            formFieldName={fields[11]}
+                            formFieldName={fields[12]}
                             formData={formData}
                             setFormData={setFormData}
                             onChange={onFormChange}

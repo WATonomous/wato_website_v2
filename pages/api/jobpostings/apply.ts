@@ -13,8 +13,7 @@ const auth = new google.auth.GoogleAuth({
     client_id: process.env.CLIENT_ID,
 });
 
-const EXPEDITED_ID = process.env.EXPEDITED_ID;
-const ROLLING_ID = process.env.ROLLING_ID;
+const GENERAL_ADMISSION_ID = process.env.EXPEDITED_ID;
 
 const sheets = google.sheets("v4");
 
@@ -49,12 +48,13 @@ const apply = async (req: NextApiRequest, res: NextApiResponse) => {
             });
         }
 
+        if (body["row"][0][0] !== "general-app") {
+            return res.status(400).json({ res: "Invalid application." });
+        }
+
         const request = {
-            spreadsheetId:
-                body["row"][0][0] === "Expedited_App"
-                    ? EXPEDITED_ID
-                    : ROLLING_ID,
-            range: "Sheet1!A1:L1",
+            spreadsheetId: GENERAL_ADMISSION_ID,
+            range: "Sheet1!A1:M1",
             valueInputOption: "USER_ENTERED",
             insertDataOption: "OVERWRITE",
             resource: {

@@ -1,20 +1,16 @@
 ---
-title: "Rolling Admission"
-team: "Robotics Engineering"
+title: "General Admission"
+team: "General Member"
 subteam: "General Application"
 location: "Waterloo, ON"
 type: "Full Time"
 ---
 
-> **Note:** This is a rolling admission. WATonomous will prioritize applicants for positions that desperately need filling.
+> **Note:** This is WATonomous's general admission application. The purpose of this application is to help streamline WATonomous's onboarding process while limiting inefficiencies with our member infrastructure.
 
-Currently, WATonomous is prioritizing individuals who can help with:
-- Marketing and Outreach
-- Graphic Design
-- CAD design
-- Experience with machining
+During general admission, we will give all applicants a fair chance at entering the team. The chances of you joining the team are purely within your control.
 
-If you can prove to us your ability to work proactively and critically, then we will prioritize you no matter what. Some ways of showing it include: consistent GitHub contributions, project portfolios, internal references, word of mouth.
+**Admissions end September 18, 2026 at 11:59pm EST.**
 
 ## Description
 
@@ -51,7 +47,7 @@ These qualifications depend on what you want to do in the team, but below is a n
 
 - Experience in previous robotics competitions such as First Robotics
 - Experience with Object Oriented Programming in C++, Python
-- Knowledge of Interprocess Communication with tools such as ROS2
+- Knowledge of Inter-process Communication with tools such as ROS2
 - Experience with AI frameworks such as PyTorch and TensorFlow
 - Research Experience, such as published papers
 - Experience in PCB design and fabrication
@@ -64,5 +60,5 @@ These qualifications depend on what you want to do in the team, but below is a n
 
 In your application, you have the option to choose what you are interested in. Our team will match you with your skill set accordingly.
 
-## What we are Looking for Above All Else
+## What We're Looking for Above All Else
 WATonomous values proactive individuals who have the willingness to learn new concepts, no matter how daunting they may be. Regardless of your background, or your seniority, we believe that anyone can become a great member of our team, and a leader in the robotics community, given time, stubbornness, and passion.
