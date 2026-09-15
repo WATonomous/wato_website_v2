@@ -60,5 +60,5 @@ These qualifications depend on what you want to do in the team, but below is a n
 
 In your application, you have the option to choose what you are interested in. Our team will match you with your skill set accordingly.
 
-## What we are Looking for Above All Else
+## What We're Looking for Above All Else
 WATonomous values proactive individuals who have the willingness to learn new concepts, no matter how daunting they may be. Regardless of your background, or your seniority, we believe that anyone can become a great member of our team, and a leader in the robotics community, given time, stubbornness, and passion.
