@@ -127,10 +127,10 @@ const SPONSORSHIP_TIERS: {
     tagline: string;
     recommended?: boolean;
 }[] = [
-    { name: "Bronze", price: "$1,000", tagline: "Great for local supporters" },
-    { name: "Silver", price: "$2,000", tagline: "Stronger campus visibility" },
-    { name: "Gold", price: "$5,000", tagline: "Best value for hiring + brand", recommended: true },
-    { name: "Platinum", price: "$10,000+", tagline: "Maximum visibility and access" },
+    { name: "Bronze", price: "$2,500", tagline: "Great for local supporters" },
+    { name: "Silver", price: "$5,000", tagline: "Stronger campus visibility" },
+    { name: "Gold", price: "$10,000", tagline: "Best value for hiring + brand", recommended: true },
+    { name: "Platinum", price: "$20,000+", tagline: "Maximum visibility and access" },
 ];
 
 const BENEFITS: Benefit[] = [
