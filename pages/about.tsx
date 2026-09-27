@@ -6,7 +6,6 @@ import MemberList from "../components/VerticalTabs/MemberList";
 import VerticalCards from "../components/VerticalCards/VerticalCards";
 import Timeline from "../components/VerticalTabs/Timeline";
 
-import eddy from "../public/imgs/headshots/me - Eddy Zhou.jpeg";
 import lena from "../public/imgs/headshots/pfp2 - Lena Ye.jpg";
 import jivan from "../public/imgs/headshots/headshot - Jivan Kesan.jpeg";
 import dan from "../public/imgs/headshots/IMG_2101 - Dan Huynh.jpeg";
@@ -21,17 +20,15 @@ import sophie from "../public/imgs/headshots/IMG_4188 - Sophie Xie.jpg";
 import owen from "../public/imgs/headshots/IMG_6799 - Owen Leather.jpeg";
 import krish from "../public/imgs/headshots/krish-xlerate-headshot - Krish Chopra.png";
 import rajan from "../public/imgs/headshots/headshot - Rajan Agarwal.png";
-import mahir from "../public/imgs/headshots/20241119_122214 - Mahir Mahota.jpg";
 import kai from "../public/imgs/headshots/pfp - Kai Ma.png";
 import lucas from "../public/imgs/headshots/_MG_0311_Original - lucas reljic-dumont.jpeg";
+import brian from "../public/imgs/headshots/Brian_Zheng-headshot.jpeg";
 import luc from "../public/imgs/headshots/IMG_8487 - Luc Edes - headshot.jpg";
 import thomason from "../public/imgs/headshots/headshot_thomason - Thomason Zhou.jpeg";
 import kishore from "../public/imgs/headshots/1680722752326 - Kishore Yogaraj.jpg";
 import mark from "../public/imgs/headshots/IMG_7633_-_Mark_Chiu.jpg";
 import jadiha from "../public/imgs/headshots/Headshot - Jadiha Aruleswaran.jpg";
-import hasan from "../public/imgs/headshots/face - Hasan Tahir.png";
 import ken from "../public/imgs/headshots/headshot ken jiang.png";
-import vishal from "../public/imgs/headshots/vishal.jpg";
 import wilson from "../public/imgs/headshots/Wilson_Cheng - Wilson Cheng.jpeg";
 import neil from "../public/imgs/headshots/Neil_Ma - Neil Ma.jpeg";
 import muhammad from "../public/imgs/headshots/Muhammad_Farooqi - Muhammad Farooqi.jpeg";
@@ -47,33 +44,11 @@ const IMAGE_PLACEHOLDER = (
 
 const MemberData = [
     {
-        imageSrc: eddy,
-        firstName: "Eddy",
-        lastName: "Zhou",
-        description:
-            "Eddy is a robotics enthusiast interested in robot embodiment and driven by a vision of cobots. He enjoys leading charges.",
-        position: "Co-Captain",
-    },
-    {
-        imageSrc: hasan,
-        firstName: "Hasan",
-        lastName: "Tahir",
+        imageSrc: brian,
+        firstName: "Brian",
+        lastName: "Zheng",
         description: "",
         position: "Co-Captain",
-    },
-    {
-        imageSrc: mahir,
-        firstName: "Mahir",
-        lastName: "Mahota",
-        description: "",
-        position: "Autonomous Platform Director",
-    },
-    {
-        imageSrc: vishal,
-        firstName: "Vishal",
-        lastName: "Jayakumar",
-        description: "",
-        position: "Autonomy Director",
     },
     {
         imageSrc: wilson,
@@ -81,6 +56,13 @@ const MemberData = [
         lastName: "Cheng",
         description: "",
         position: "Humanoid Director",
+    },
+    {
+        imageSrc: lucas,
+        firstName: "Lucas",
+        lastName: "Reljic-Dumont",
+        description: "",
+        position: "Autonomy Director",
     },
     {
         imageSrc: neil,
@@ -102,13 +84,6 @@ const MemberData = [
         lastName: "Abraham",
         description: "",
         position: "Humanoid Perception Lead",
-    },
-    {
-        imageSrc: dan,
-        firstName: "Dan",
-        lastName: "Huynh",
-        description: "",
-        position: "Perceptions Lead",
     },
     {
         imageSrc: kishore,
@@ -231,25 +206,11 @@ const MemberData = [
         position: "Research Member",
     },
     {
-        imageSrc: lucas,
-        firstName: "Lucas",
-        lastName: "Reljic-Dumont",
-        description: "",
-        position: "Perceptions",
-    },
-    {
         imageSrc: luc,
         firstName: "Luc",
         lastName: "Edes",
         description: "",
         position: "Research Member",
-    },
-    {
-        imageSrc: thomason,
-        firstName: "Thomason",
-        lastName: "Zhou",
-        description: "",
-        position: "ASD",
     },
     {
         imageSrc: mark,
