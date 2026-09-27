@@ -8,7 +8,7 @@ import Timeline from "../components/VerticalTabs/Timeline";
 
 import lena from "../public/imgs/headshots/pfp2 - Lena Ye.jpg";
 import jivan from "../public/imgs/headshots/headshot - Jivan Kesan.jpeg";
-import dan from "../public/imgs/headshots/IMG_2101 - Dan Huynh.jpeg";
+import muhtasim from "../public/imgs/headshots/Muhtasim-headshot.jpg";
 import harsharan from "../public/imgs/headshots/20241114_192744 - Harsharan Rakhra.jpg";
 import manjot from "../public/imgs/headshots/IMG_3159 - Manjot Dola.jpg";
 import andrew from "../public/imgs/headshots/Andrew Headshot - Andrew Shen.jpg";
@@ -24,7 +24,6 @@ import kai from "../public/imgs/headshots/pfp - Kai Ma.png";
 import lucas from "../public/imgs/headshots/_MG_0311_Original - lucas reljic-dumont.jpeg";
 import brian from "../public/imgs/headshots/Brian_Zheng-headshot.jpeg";
 import luc from "../public/imgs/headshots/IMG_8487 - Luc Edes - headshot.jpg";
-import thomason from "../public/imgs/headshots/headshot_thomason - Thomason Zhou.jpeg";
 import kishore from "../public/imgs/headshots/1680722752326 - Kishore Yogaraj.jpg";
 import mark from "../public/imgs/headshots/IMG_7633_-_Mark_Chiu.jpg";
 import jadiha from "../public/imgs/headshots/Headshot - Jadiha Aruleswaran.jpg";
@@ -62,7 +61,14 @@ const MemberData = [
         firstName: "Lucas",
         lastName: "Reljic-Dumont",
         description: "",
-        position: "Autonomy Director",
+        position: "Autonomous Vehicle Director",
+    },
+    {
+        imageSrc: muhtasim,
+        firstName: "Muhtasim",
+        lastName: "Ahsan",
+        description: "",
+        position: "Micro Autonomy Director",
     },
     {
         imageSrc: neil,
