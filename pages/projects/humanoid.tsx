@@ -9,7 +9,7 @@ import { SponsorCardProps } from "../../components/Sponsor/SponsorCard";
 import wilson from "../../public/imgs/headshots/Wilson_Cheng - Wilson Cheng.jpeg";
 import allen from "../../public/imgs/headshots/Allen_Abraham - Allen Abraham.jpeg";
 
-import heroImg from "../../public/imgs/projects/humanoid/humanoid_hero_team.jpg";
+import heroImg from "../../public/imgs/projects/humanoid/humanoid_hero.jpg";
 import imgpane01 from "../../public/imgs/projects/humanoid/dual_arm_hero.png";
 import imgpane02 from "../../public/imgs/projects/humanoid/leg_cad.png";
 import imgpane03 from "../../public/imgs/projects/humanoid/hand_22dof.jpg";
