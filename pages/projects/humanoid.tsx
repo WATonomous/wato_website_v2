@@ -4,10 +4,12 @@ import ContentPane from "../../components/ContentPane";
 import Hero from "../../components/Hero";
 import CTASection from "../../components/CTASection";
 import MemberCard, { MemberCardProps } from "../../components/MemberCard";
+import { SponsorCardProps } from "../../components/Sponsor/SponsorCard";
 
 import wilson from "../../public/imgs/headshots/Wilson_Cheng - Wilson Cheng.jpeg";
 import allen from "../../public/imgs/headshots/Allen_Abraham - Allen Abraham.jpeg";
 
+import heroImg from "../../public/imgs/projects/humanoid/humanoid_hero.jpg";
 import imgpane01 from "../../public/imgs/projects/humanoid/dual_arm_hero.png";
 import imgpane02 from "../../public/imgs/projects/humanoid/leg_cad.png";
 import imgpane03 from "../../public/imgs/projects/humanoid/hand_22dof.jpg";
@@ -18,6 +20,9 @@ import imgpane07 from "../../public/imgs/projects/humanoid/leg_cad_3.png";
 import imgpane08 from "../../public/imgs/projects/humanoid/leg_cad_4.png";
 import handImg03 from "../../public/imgs/projects/humanoid/hand_22dof_3.jpg";
 import handImg04 from "../../public/imgs/projects/humanoid/hand_22dof_4.jpg";
+
+import fabworks from "../../public/imgs/sponsors/fabworks.png";
+import cubemars from "../../public/imgs/sponsors/cubemars.png";
 
 const PAGE_TITLE = "Humanoid Autonomy";
 const HERO_TEXT = "Building UWaterloo's first humanoid robot, Pioneer: a 14 DOF bimanual arm, 22 DOF hand, and 12 DOF leg, fully custom and built in-house from mechanical design to autonomy stack, bringing human-like mobility and dexterity to real-world environments.";
@@ -65,6 +70,21 @@ const TEAM_MEMBERS: MemberCardProps[] = [
   },
 ];
 
+const SPONSORS_TITLE = "Our Sponsors";
+const SPONSORS_SUBTITLE = "The Partners Helping Build Pioneer";
+const SPONSORS: SponsorCardProps[] = [
+  {
+    title: "CubeMars",
+    image: cubemars,
+    url: "https://www.cubemars.com/",
+  },
+  {
+    title: "Fabworks",
+    image: fabworks,
+    url: "https://www.fabworks.com/",
+  },
+];
+
 const Humanoid = () => {
   return (
     <>
@@ -76,7 +96,7 @@ const Humanoid = () => {
         />
       </Head>
       <Hero
-        // image={imgpane00} //TODO change the image source in tailwind config
+        image={heroImg}
         title={PAGE_TITLE}
         subtitle={HERO_TEXT}
         cta={"See More"}
@@ -194,6 +214,35 @@ const Humanoid = () => {
                 description={member.description}
                 position={member.position}
               />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="relative flex flex-col items-center bg-black bg-opacity-90 py-32 lg:bg-opacity-80">
+        <div className="relative z-10 flex w-full max-w-[95rem] flex-col items-center px-8 text-center text-white md:px-16 lg:w-[85vw] lg:px-0">
+          <div className="text-3xl font-black lg:text-4xl">
+            {SPONSORS_TITLE}&nbsp;<span className="text-wato-teal">{"//"}</span>
+          </div>
+          <div className="mb-8 mt-2 text-base italic text-wato-teal lg:text-lg">
+            {SPONSORS_SUBTITLE}
+          </div>
+          <div className="flex flex-wrap justify-center gap-4">
+            {SPONSORS.map((sponsor) => (
+              <a
+                key={sponsor.title}
+                href={sponsor.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={sponsor.title}
+                className="flex h-32 w-56 items-center justify-center rounded-lg border border-wato-teal/20 bg-[#161c24] p-5 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_24px_rgba(102,221,200,0.35)]"
+              >
+                <Image
+                  src={sponsor.image}
+                  alt={`${sponsor.title} sponsor logo`}
+                  className="max-h-full max-w-full object-contain"
+                />
+              </a>
             ))}
           </div>
         </div>

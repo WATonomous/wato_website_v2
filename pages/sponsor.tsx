@@ -23,6 +23,8 @@ import elastic from "../public/imgs/sponsors/elastic.svg";
 import velodyne from "../public/imgs/sponsors/velodyne.png";
 import gm from "../public/imgs/sponsors/gm.png";
 import foxglove from "../public/imgs/sponsors/foxglove.png";
+import fabworks from "../public/imgs/sponsors/fabworks.png";
+import cubemars from "../public/imgs/sponsors/cubemars.png";
 
 const GOLD_SPONSORS: SponsorCardProps[] = [
     {
@@ -109,6 +111,16 @@ const PRODUCT_SPONSORS: SponsorCardProps[] = [
     {
         title: "Foxglove",
         image: foxglove,
+    },
+    {
+        title: "CubeMars",
+        image: cubemars,
+        url: "https://www.cubemars.com/",
+    },
+    {
+        title: "Fabworks",
+        image: fabworks,
+        url: "https://www.fabworks.com/",
     },
 ];
 
@@ -699,13 +711,19 @@ const Sponsor = () => {
                             >
                                 {[...PRODUCT_SPONSORS, ...PRODUCT_SPONSORS].map((sponsor, idx) => (
                                     <div key={`${sponsor.title}-${idx}`} className="mx-2">
-                                        <div className="flex h-32 w-56 items-center justify-center rounded-lg border border-wato-teal/20 bg-[#161c24] p-5 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_24px_rgba(102,221,200,0.35)]">
+                                        <a
+                                            href={sponsor.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label={sponsor.title}
+                                            className="flex h-32 w-56 items-center justify-center rounded-lg border border-wato-teal/20 bg-[#161c24] p-5 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_24px_rgba(102,221,200,0.35)]"
+                                        >
                                             <Image
                                                 src={sponsor.image}
                                                 alt={`${sponsor.title} sponsor logo`}
                                                 className="max-h-full max-w-full object-contain"
                                             />
-                                        </div>
+                                        </a>
                                     </div>
                                 ))}
                             </div>

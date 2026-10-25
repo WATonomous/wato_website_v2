@@ -3,6 +3,7 @@ import Image, { StaticImageData } from "next/image";
 export interface SponsorCardProps {
     title: string;
     image: StaticImageData;
+    url?: string;
 }
 
 const SponsorCard = ({ title, image }: SponsorCardProps) => {
