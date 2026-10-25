@@ -113,14 +113,14 @@ const PRODUCT_SPONSORS: SponsorCardProps[] = [
         image: foxglove,
     },
     {
-        title: "Fabworks",
-        image: fabworks,
-        url: "https://www.fabworks.com/",
-    },
-    {
         title: "CubeMars",
         image: cubemars,
         url: "https://www.cubemars.com/",
+    },
+    {
+        title: "Fabworks",
+        image: fabworks,
+        url: "https://www.fabworks.com/",
     },
 ];
 

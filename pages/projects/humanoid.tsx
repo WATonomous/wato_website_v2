@@ -74,14 +74,14 @@ const SPONSORS_TITLE = "Our Sponsors";
 const SPONSORS_SUBTITLE = "The Partners Helping Build Pioneer";
 const SPONSORS: SponsorCardProps[] = [
   {
-    title: "Fabworks",
-    image: fabworks,
-    url: "https://www.fabworks.com/",
-  },
-  {
     title: "CubeMars",
     image: cubemars,
     url: "https://www.cubemars.com/",
+  },
+  {
+    title: "Fabworks",
+    image: fabworks,
+    url: "https://www.fabworks.com/",
   },
 ];
 
