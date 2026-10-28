@@ -59,7 +59,7 @@ const TEAM_MEMBERS: MemberCardProps[] = [
     firstName: "Wilson",
     lastName: "Cheng",
     description: "",
-    position: "Humanoid Director",
+    position: "Co-Captain & Humanoid Director",
   },
   {
     imageSrc: allen,
