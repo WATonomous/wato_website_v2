@@ -19,7 +19,6 @@ const KONAMI = [
     "b",
     "a",
 ];
-const HERO_MOVES = ["wave", "flex", "dance"];
 const GROUP_COLORS: Record<string, string> = {
     "Head & Torso": "#F6F8FA",
     Arms: "#66DDC8",
@@ -192,6 +191,8 @@ const PioneerPlayground = ({
     const exit = useCallback(() => {
         setPlaying(false);
         setHover(null);
+        // The hero copy is white: always come back to the dark studio look.
+        setMode("studio");
     }, []);
 
     useEffect(() => {
@@ -696,20 +697,6 @@ const PioneerPlayground = ({
                                     →
                                 </span>
                             </button>
-                            {HERO_MOVES.map((id) => (
-                                <button
-                                    key={id}
-                                    onClick={() => play(id)}
-                                    className={`rounded-full border px-3 py-2 text-sm transition ${
-                                        activeMove === id
-                                            ? "border-wato-teal bg-wato-teal/20 text-wato-teal"
-                                            : "border-white/25 bg-black/40 hover:border-wato-teal hover:text-wato-teal"
-                                    }`}
-                                >
-                                    {MOVE_BY_ID[id].emoji}{" "}
-                                    {MOVE_BY_ID[id].label}
-                                </button>
-                            ))}
                         </div>
                     )}
 

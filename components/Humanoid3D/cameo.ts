@@ -1,5 +1,5 @@
 // Landing-page cameo: Pioneer, cel-shaded with ink lines so it reads as part of the illustrated alley,
-// walks in and stands on the sidewalk, watches the cursor, waves when hovered, and points at whichever
+// stands on the sidewalk, watches the cursor, waves when hovered, and points at whichever
 // of the scene's other robots the visitor hovers. A second Pioneer replaces the drawn robot peeking out
 // from behind the car, in its pose and hidden behind the car's outline (the background video swaps to a
 // copy with the drawing painted out while this one is on screen).
@@ -81,9 +81,9 @@ export class Cameo {
     private pxPerM = 1;
 
     // behaviour
-    private phase: "enter" | "turn" | "idle" = "enter";
-    private walkX = 2.6;
-    private yaw = -Math.PI / 2;
+    private phase: "enter" | "turn" | "idle" = "idle"; // already standing on the sidewalk
+    private walkX = 0;
+    private yaw = -0.35;
     private move?: Move;
     private moveT = 0;
     private nextIdle = 7;

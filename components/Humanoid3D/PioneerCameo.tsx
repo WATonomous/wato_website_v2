@@ -5,6 +5,32 @@ import type { Cameo } from "./cameo";
 const MODEL_URL = "/models/pioneer.glb";
 const HUMANOID_PAGE = "/projects/humanoid";
 
+/**
+ * A still of both Pioneers (rendered from this scene) shown from the first frame, so the page never
+ * flashes the old drawing while the 3D model downloads. Its box is in the 4000x2244 illustration.
+ */
+const POSTER = {
+    src: "/imgs/pioneer-landing.png",
+    x: 1836,
+    y: 891,
+    w: 1639,
+    h: 965,
+};
+const ART = { w: 4000, h: 2244 };
+
+/** Same object-cover, bottom-anchored mapping as the background video. */
+function posterBox() {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    const s = Math.max(W / ART.w, H / ART.h);
+    return {
+        left: (W - ART.w * s) / 2 + POSTER.x * s,
+        top: H - ART.h * s + POSTER.y * s,
+        width: POSTER.w * s,
+        height: POSTER.h * s,
+    };
+}
+
 /** The only line, shown while the visitor hovers Pioneer. */
 const HOVER_LINE =
     "We're building Pioneer, the first Canadian undergraduate humanoid →";
@@ -46,6 +72,9 @@ const PioneerCameo = ({ onLive }: Props) => {
     const router = useRouter();
     const [line, setLine] = useState<string | null>(null);
     const [ready, setReady] = useState(false);
+    const [poster, setPoster] = useState<ReturnType<typeof posterBox> | null>(
+        null
+    );
 
     useEffect(() => {
         // Only where the sidewalk spot is on screen (landscape) and the device can hover.
@@ -59,23 +88,30 @@ const PioneerCameo = ({ onLive }: Props) => {
             return;
         }
 
+        // Swap the scene over straight away; the live robots replace the still once loaded.
+        setPoster(posterBox());
+        onLive?.(true);
+        // The drawn robot's hover outline no longer matches what's there.
+        document.documentElement.classList.add("pioneer-live");
+        const onResize = () => setPoster(posterBox());
+        window.addEventListener("resize", onResize);
+
         let cameo: Cameo | undefined;
         let cancelled = false;
         let hovering = false;
         let pointing: string | null = null;
         const pick = () => (hovering ? HOVER_LINE : null);
 
-        // Let the page and video settle first; the model is fetched in the background.
         const start = window.setTimeout(() => {
             import("./cameo").then(({ Cameo }) => {
                 if (cancelled || !canvasRef.current) return;
                 cameo = new Cameo(canvasRef.current, {
-                    onReady: () => {
-                        setReady(true);
-                        onLive?.(true);
-                        // The drawn robot's hover outline no longer matches what's there.
-                        document.documentElement.classList.add("pioneer-live");
-                    },
+                    // Swap after the live robots have drawn a couple of frames: the still matches them,
+                    // so a hard cut is invisible (a cross-fade showed both half see-through).
+                    onReady: () =>
+                        requestAnimationFrame(() =>
+                            requestAnimationFrame(() => setReady(true))
+                        ),
                     onHover: (h) => {
                         hovering = h;
                         document.body.style.cursor = h ? "pointer" : "";
@@ -92,7 +128,7 @@ const PioneerCameo = ({ onLive }: Props) => {
                 cameoRef.current = cameo;
                 cameo.load(MODEL_URL).catch(() => undefined);
             });
-        }, 600);
+        }, 0);
 
         // Clicking Pioneer opens its page instead of the scene's default link.
         const onClick = (e: MouseEvent) => {
@@ -129,6 +165,7 @@ const PioneerCameo = ({ onLive }: Props) => {
             cancelled = true;
             window.clearTimeout(start);
             window.removeEventListener("click", onClick, true);
+            window.removeEventListener("resize", onResize);
             document.removeEventListener("pointerover", onOver);
             document.removeEventListener("pointerout", onOut);
             document.body.style.cursor = "";
@@ -140,10 +177,21 @@ const PioneerCameo = ({ onLive }: Props) => {
 
     return (
         <>
+            {poster && (
+                <img
+                    src={POSTER.src}
+                    alt=""
+                    aria-hidden
+                    className={`pointer-events-none fixed ${
+                        ready ? "opacity-0" : "opacity-100"
+                    }`}
+                    style={poster}
+                />
+            )}
             <canvas
                 ref={canvasRef}
                 aria-hidden
-                className={`pointer-events-none fixed inset-0 h-screen w-screen transition-opacity duration-700 ${
+                className={`pointer-events-none fixed inset-0 h-screen w-screen ${
                     ready ? "opacity-100" : "opacity-0"
                 }`}
             />
