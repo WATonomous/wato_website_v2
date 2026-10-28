@@ -12,8 +12,11 @@ import {
     outlineWidth,
 } from "./materials";
 
-/** Where Pioneer stands in the 4000x2244 illustration (feet), and how tall it is there. */
-const ANCHOR = { x: 3330, y: 1830, height: 660 };
+/**
+ * Where Pioneer stands in the 4000x2244 illustration (feet), and the scene's scale there: the bakery
+ * door beside it (~2.1 m) is ~820 px, so ~390 px a metre. Pioneer is drawn at its true CAD height.
+ */
+const ANCHOR = { x: 3330, y: 1830, pxPerMetre: 390 };
 const ART = { w: 4000, h: 2244 };
 const IDLE_MOVES = ["wave", "thumbs", "peace", "count"];
 const POINT = hand("r", [0.8, 0, 1, 1, 1]);
@@ -202,7 +205,7 @@ export class Cameo {
         return {
             x: offX + ANCHOR.x * s,
             y: offY + ANCHOR.y * s,
-            height: ANCHOR.height * s,
+            pxPerM: ANCHOR.pxPerMetre * s,
             W,
             H,
         };
@@ -212,11 +215,10 @@ export class Cameo {
         const a = this.anchorOnScreen();
         this.renderer.setSize(a.W, a.H, false);
         this.camera.aspect = a.W / a.H;
-        // Distance at which a 1.64 m robot is `a.height` px tall, then shift the frustum so its feet
+        // Distance at which a metre is `pxPerM` px, then shift the frustum so Pioneer's feet
         // land on the anchor point.
         const tanHalf = Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
-        const robotH = this.robot?.height || 1.64;
-        this.pxPerM = a.height / robotH;
+        this.pxPerM = a.pxPerM;
         const d = a.H / (2 * tanHalf * this.pxPerM);
         const eye = 1.05;
         this.camera.position.set(0, eye, d);
@@ -230,7 +232,8 @@ export class Cameo {
             a.H
         );
         this.camera.updateProjectionMatrix();
-        this.onScreen = a.x > -a.height * 0.3 && a.x < a.W + a.height * 0.3;
+        this.onScreen =
+            a.x > -this.pxPerM * 0.5 && a.x < a.W + this.pxPerM * 0.5;
     };
 
     // ---------------------------------------------------------------- input
