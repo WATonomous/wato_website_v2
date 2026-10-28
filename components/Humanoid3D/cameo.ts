@@ -8,7 +8,7 @@ import { PioneerRobot } from "./robot";
 import carOutline from "./car_outline.json";
 import { MOVE_BY_ID, Move, Pose, REST, hand } from "./moves";
 import {
-    buildCreases,
+    buildCreasesAsync,
     buildHulls,
     makeComicMaterial,
     makeOutlineMaterial,
@@ -213,7 +213,10 @@ export class Cameo {
         const peekModel = model.clone(); // shares the meshes' geometry
         const robot = PioneerRobot.fromScene(model);
         this.robot = robot;
-        this.buildPeek(PioneerRobot.fromScene(peekModel));
+        // Both robots share geometry, so their ink lines are computed once, a slice per frame.
+        const edges = new Map<THREE.BufferGeometry, THREE.EdgesGeometry>();
+        await this.buildPeek(PioneerRobot.fromScene(peekModel), edges);
+        if (this.disposed) return;
         for (const m of robot.meshes) {
             const mat = makeComicMaterial(this.comicUniforms);
             m.material = mat;
@@ -221,16 +224,23 @@ export class Cameo {
         }
         for (const m of robot.glowMeshes) m.material = this.glowMat;
         buildHulls(robot.meshes, this.outlineMat);
-        buildCreases(robot.meshes, this.creaseMat, 50);
+        await buildCreasesAsync(robot.meshes, this.creaseMat, 50, edges);
+        if (this.disposed) return;
         for (const [k, v] of Object.entries(REST)) robot.set(k, v);
         robot.ground();
         this.scene.add(robot.hips);
+        // Compile the shaders in the background (where supported) before the first frame.
+        await this.renderer.compileAsync(this.scene, this.camera);
+        if (this.disposed) return;
         this.cb.onReady?.();
         this.clock.getDelta();
         this.loop();
     }
 
-    private buildPeek(peek: PioneerRobot) {
+    private async buildPeek(
+        peek: PioneerRobot,
+        edges: Map<THREE.BufferGeometry, THREE.EdgesGeometry>
+    ) {
         this.peek = peek;
         // Drawn only where the car's outline (stencil 1) is not.
         const behindCar = (m: THREE.Material) => {
@@ -253,10 +263,11 @@ export class Cameo {
             peek.meshes,
             behindCar(this.peekOutline) as THREE.ShaderMaterial
         );
-        buildCreases(
+        await buildCreasesAsync(
             peek.meshes,
             behindCar(this.peekCrease) as THREE.LineBasicMaterial,
-            50
+            50,
+            edges
         );
         for (const [k, v] of Object.entries(PEEK_POSE)) peek.set(k, v);
         peek.hips.position.x = PEEK_X;
