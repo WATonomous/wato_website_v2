@@ -32,14 +32,23 @@ export default function Home() {
             {/* Click targets over both Pioneers, live from the first paint (on phones too), so they
                 open the humanoid page even before the 3D has loaded. */}
             <div className="pointer-events-none fixed inset-0">
-                {PIONEER_HOTSPOTS.map(([x, y, w, h]) => (
+                {PIONEER_HOTSPOTS.map(({ name, x, y, w, h }) => (
                     <Link
-                        key={x}
+                        key={name}
                         href="/projects/humanoid"
                         aria-label="Pioneer, our humanoid robot"
-                        className="pointer-events-auto absolute"
+                        className="group pointer-events-auto absolute"
                         style={artBox(x, y, w, h)}
-                    />
+                    >
+                        {/* Hover outline for the still; the live 3D Pioneers draw their own. */}
+                        {!pioneerLive && (
+                            <img
+                                src={`/imgs/pioneer-outline-${name}.png`}
+                                alt=""
+                                className="h-full w-full opacity-0 transition-opacity group-hover:opacity-100"
+                            />
+                        )}
+                    </Link>
                 ))}
             </div>
             <div className="fixed z-0 h-screen w-screen bg-TopGradient pointer-events-none" />

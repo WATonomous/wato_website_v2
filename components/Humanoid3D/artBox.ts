@@ -16,8 +16,11 @@ export function artBox(x: number, y: number, w: number, h: number) {
 /** The still of both Pioneers (public/imgs/pioneer-landing.png), in art pixels. */
 export const PIONEER_STILL = { x: 1836, y: 891, w: 1639, h: 965 };
 
-/** Where each Pioneer stands in the art, for click targets: [x, y, w, h]. */
-export const PIONEER_HOTSPOTS: [number, number, number, number][] = [
-    [3150, 1180, 320, 670], // on the sidewalk by the bakery
-    [1900, 891, 570, 390], // peeking out from behind Eve (above the car)
+/**
+ * Click targets over each Pioneer, in art pixels, with the teal hover outline cut from the still
+ * (public/imgs/pioneer-outline-<name>.png, the same size as the box).
+ */
+export const PIONEER_HOTSPOTS = [
+    { name: "sidewalk", x: 3150, y: 1180, w: 320, h: 670 }, // by the bakery
+    { name: "peek", x: 1900, y: 891, w: 570, h: 390 }, // behind Eve (above the car)
 ];
