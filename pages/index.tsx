@@ -1,4 +1,3 @@
-import Head from "next/head";
 import Link from "next/link";
 import { useState } from "react";
 import WatoVideo from "../components/WatoVideo";
@@ -11,16 +10,6 @@ export default function Home() {
     const [pioneerLive, setPioneerLive] = useState(false);
     return (
         <div className="z-0 w-screen h-screen cursor-pointer overflow-hidden bg-VideoPlaceholder bg-cover">
-            <Head>
-                {/* Start fetching the 3D model with the page, on the screens that use it (see PioneerCameo). */}
-                <link
-                    rel="preload"
-                    href="/models/pioneer.glb"
-                    as="fetch"
-                    crossOrigin="anonymous"
-                    media="(hover: hover) and (min-aspect-ratio: 23/20)"
-                />
-            </Head>
             <Link href="/about" className="fixed">
                 <WatoVideo hideStill={pioneerLive} />
             </Link>
