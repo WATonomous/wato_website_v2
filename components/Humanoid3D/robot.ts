@@ -59,8 +59,20 @@ export class PioneerRobot {
         const gltf = await loader.loadAsync(url, (e) => {
             if (onProgress && e.total) onProgress(e.loaded / e.total);
         });
+        return PioneerRobot.fromScene(gltf.scene);
+    }
+
+    /** Load the model once, e.g. to build several robots from `scene.clone()`. */
+    static async loadScene(url: string): Promise<THREE.Object3D> {
+        const loader = new GLTFLoader();
+        loader.setMeshoptDecoder(MeshoptDecoder);
+        return (await loader.loadAsync(url)).scene;
+    }
+
+    /** Build from an already-loaded model (pass `scene.clone()` for a second robot sharing its meshes). */
+    static fromScene(scene: THREE.Object3D): PioneerRobot {
         const robot = new PioneerRobot();
-        robot.build(gltf.scene);
+        robot.build(scene);
         return robot;
     }
 

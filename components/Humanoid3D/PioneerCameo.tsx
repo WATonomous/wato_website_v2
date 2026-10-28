@@ -34,7 +34,7 @@ const NEIGHBOURS: Record<string, { x: number; y: number; line: string }> = {
     "/projects/humanoid": {
         x: 2150,
         y: 1030,
-        line: "Hey, that's me! In 2D 👀",
+        line: "That's my twin, hiding behind Eve 👀",
     },
 };
 
@@ -42,7 +42,12 @@ const NEIGHBOURS: Record<string, { x: number; y: number; line: string }> = {
  * Pioneer stepping into the landing-page illustration. Rendered on a transparent canvas over the
  * video; it ignores pointer events itself and listens on the window so the scene's links still work.
  */
-const PioneerCameo = () => {
+interface Props {
+    /** Called with true once Pioneer is on screen (and false when it goes away). */
+    onLive?: (live: boolean) => void;
+}
+
+const PioneerCameo = ({ onLive }: Props) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const bubbleRef = useRef<HTMLDivElement>(null);
     const cameoRef = useRef<Cameo>();
@@ -85,7 +90,12 @@ const PioneerCameo = () => {
             import("./cameo").then(({ Cameo }) => {
                 if (cancelled || !canvasRef.current) return;
                 cameo = new Cameo(canvasRef.current, {
-                    onReady: () => setReady(true),
+                    onReady: () => {
+                        setReady(true);
+                        onLive?.(true);
+                        // The drawn robot's hover outline no longer matches what's there.
+                        document.documentElement.classList.add("pioneer-live");
+                    },
                     onHover: (h) => {
                         hovering = h;
                         document.body.style.cursor = h ? "pointer" : "";
@@ -155,9 +165,11 @@ const PioneerCameo = () => {
             document.removeEventListener("pointerover", onOver);
             document.removeEventListener("pointerout", onOut);
             document.body.style.cursor = "";
+            document.documentElement.classList.remove("pioneer-live");
+            onLive?.(false);
             cameo?.dispose();
         };
-    }, [router]);
+    }, [router, onLive]);
 
     return (
         <>

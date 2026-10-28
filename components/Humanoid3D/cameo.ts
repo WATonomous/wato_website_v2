@@ -1,8 +1,11 @@
 // Landing-page cameo: Pioneer, cel-shaded with ink lines so it reads as part of the illustrated alley,
 // walks in and stands on the sidewalk, watches the cursor, waves when hovered, and points at whichever
-// of the scene's other robots the visitor hovers.
+// of the scene's other robots the visitor hovers. A second Pioneer replaces the drawn robot peeking out
+// from behind the car, in its pose and hidden behind the car's outline (the background video swaps to a
+// copy with the drawing painted out while this one is on screen).
 import * as THREE from "three";
 import { PioneerRobot } from "./robot";
+import carOutline from "./car_outline.json";
 import { MOVE_BY_ID, Move, Pose, REST, hand } from "./moves";
 import {
     buildCreases,
@@ -18,6 +21,30 @@ import {
  */
 const ANCHOR = { x: 3330, y: 1830, pxPerMetre: 390 };
 const ART = { w: 4000, h: 2244 };
+/** The peeking Pioneer: feet (hidden behind the car) and scene scale there, matched to the drawing. */
+const PEEK = { x: 2080, y: 1549, pxPerMetre: 400 };
+const PEEK_X = 50; // its spot in the 3D scene, well away from the sidewalk Pioneer
+
+/** The drawing's pose: left arm bent up with the index finger raised, right hand on the car roof. */
+const PEEK_POSE: Pose = {
+    ...REST,
+    l_shoulder_roll: 0.95,
+    l_upper_arm_yaw: -1.57,
+    l_elbow: -1.4,
+    l_forearm_roll: 0.2,
+    ...hand("l", [0.8, 0, 1, 1, 1]),
+    r_shoulder_pitch: -0.9,
+    r_shoulder_roll: 0.3,
+    r_elbow: -1.0,
+    ...hand("r", [0.5, 0.55, 0.6, 0.65, 0.7]),
+    Hip_F_L: 0,
+    Hip_F_R: 0,
+    Knee_L: 0,
+    Knee_R: 0,
+    Ankle_P_L: 0,
+    Ankle_P_R: 0,
+};
+
 const IDLE_MOVES = ["wave", "thumbs", "peace", "count"];
 const POINT = hand("r", [0.8, 0, 1, 1, 1]);
 
@@ -69,6 +96,34 @@ export class Cameo {
     private bounds = new THREE.Box3();
     private pointing: { x: number; y: number } | null = null; // illustration coords
     private lantern!: THREE.DirectionalLight;
+
+    // the peeking Pioneer
+    private peek?: PioneerRobot;
+    private peekCam = new THREE.PerspectiveCamera(20, 1, 0.1, 50);
+    private peekLook = new THREE.Vector2();
+    private peekHover = false;
+    private peekOutline = makeOutlineMaterial();
+    private peekCrease = new THREE.LineBasicMaterial({
+        color: 0x14100c,
+        transparent: true,
+        opacity: 0.75,
+    });
+    private maskScene = new THREE.Scene();
+    private maskCam = new THREE.OrthographicCamera(0, 1, 0, 1, -1, 1);
+    private mask = new THREE.Mesh(
+        new THREE.BufferGeometry(),
+        new THREE.MeshBasicMaterial({
+            colorWrite: false,
+            depthWrite: false,
+            depthTest: false,
+            stencilWrite: true,
+            stencilRef: 1,
+            stencilFunc: THREE.AlwaysStencilFunc,
+            stencilZPass: THREE.ReplaceStencilOp,
+            side: THREE.DoubleSide,
+        })
+    );
+    private ground!: THREE.Mesh;
     private reducedMotion: boolean;
 
     constructor(
@@ -79,7 +134,10 @@ export class Cameo {
             canvas,
             antialias: true,
             alpha: true,
+            stencil: true,
         });
+        this.renderer.autoClear = false;
+        this.maskScene.add(this.mask);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
         this.renderer.setClearColor(0x000000, 0);
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -120,6 +178,7 @@ export class Cameo {
         ground.rotation.x = -Math.PI / 2;
         ground.receiveShadow = true;
         this.scene.add(ground);
+        this.ground = ground;
 
         window.addEventListener("resize", this.resize);
         window.addEventListener("pointermove", this.onPointer, {
@@ -129,9 +188,12 @@ export class Cameo {
     }
 
     async load(url: string) {
-        const robot = await PioneerRobot.load(url);
+        const model = await PioneerRobot.loadScene(url);
         if (this.disposed) return;
+        const peekModel = model.clone(); // shares the meshes' geometry
+        const robot = PioneerRobot.fromScene(model);
         this.robot = robot;
+        this.buildPeek(PioneerRobot.fromScene(peekModel));
         for (const m of robot.meshes) {
             const mat = makeComicMaterial(this.comicUniforms);
             m.material = mat;
@@ -148,8 +210,42 @@ export class Cameo {
         this.loop();
     }
 
+    private buildPeek(peek: PioneerRobot) {
+        this.peek = peek;
+        // Drawn only where the car's outline (stencil 1) is not.
+        const behindCar = (m: THREE.Material) => {
+            m.stencilWrite = true;
+            m.stencilRef = 1;
+            m.stencilFunc = THREE.NotEqualStencilFunc;
+            return m;
+        };
+        for (const m of peek.meshes) {
+            const mat = behindCar(makeComicMaterial(this.comicUniforms));
+            m.material = mat;
+            m.castShadow = false;
+            this.mats.push(mat);
+        }
+        for (const m of peek.glowMeshes)
+            m.material = behindCar(this.glowMat.clone());
+        buildHulls(
+            peek.meshes,
+            behindCar(this.peekOutline) as THREE.ShaderMaterial
+        );
+        buildCreases(
+            peek.meshes,
+            behindCar(this.peekCrease) as THREE.LineBasicMaterial,
+            50
+        );
+        for (const [k, v] of Object.entries(PEEK_POSE)) peek.set(k, v);
+        peek.hips.position.x = PEEK_X;
+        peek.hips.rotation.y = -0.15;
+        peek.ground();
+        this.scene.add(peek.hips);
+        this.resize();
+    }
+
     get isHovering() {
-        return this.hovering;
+        return this.hovering || this.peekHover;
     }
 
     /** Play a move now (e.g. a wave when the visitor hovers). */
@@ -172,6 +268,9 @@ export class Cameo {
         this.mats.forEach((m) => m.dispose());
         this.outlineMat.dispose();
         this.creaseMat.dispose();
+        this.peekOutline.dispose();
+        this.peekCrease.dispose();
+        this.mask.geometry.dispose();
         this.glowMat.dispose();
         this.renderer.dispose();
     }
@@ -211,7 +310,49 @@ export class Cameo {
         };
     }
 
+    /** Frame `cam` so a figure standing at `x` in the 3D scene has its feet on `anchor` in the art. */
+    private frame(
+        cam: THREE.PerspectiveCamera,
+        x: number,
+        anchor: { x: number; y: number; pxPerMetre: number }
+    ) {
+        const W = window.innerWidth;
+        const H = window.innerHeight;
+        const p = this.artToScreen(anchor.x, anchor.y);
+        const s = Math.max(W / ART.w, H / ART.h);
+        const pxPerM = anchor.pxPerMetre * s;
+        const tanHalf = Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
+        const d = H / (2 * tanHalf * pxPerM);
+        const eye = 1.05;
+        cam.aspect = W / H;
+        cam.position.set(x, eye, d);
+        cam.lookAt(x, eye, 0);
+        cam.setViewOffset(W, H, W / 2 - p.x, H / 2 + eye * pxPerM - p.y, W, H);
+        cam.updateProjectionMatrix();
+    }
+
     private resize = () => {
+        if (this.peek) {
+            this.frame(this.peekCam, PEEK_X, PEEK);
+            // Car outline in screen pixels for the stencil pass.
+            const W = window.innerWidth;
+            const H = window.innerHeight;
+            const shape = new THREE.Shape(
+                (carOutline as number[][]).map(([x, y]) => {
+                    const p = this.artToScreen(x, y);
+                    return new THREE.Vector2(p.x, p.y);
+                })
+            );
+            this.mask.geometry.dispose();
+            this.mask.geometry = new THREE.ShapeGeometry(shape);
+            Object.assign(this.maskCam, {
+                left: 0,
+                right: W,
+                top: 0,
+                bottom: H,
+            });
+            this.maskCam.updateProjectionMatrix();
+        }
         const a = this.anchorOnScreen();
         this.renderer.setSize(a.W, a.H, false);
         this.camera.aspect = a.W / a.H;
@@ -251,6 +392,15 @@ export class Cameo {
                 THREE.MathUtils.clamp(nx, -1.2, 1.2),
                 THREE.MathUtils.clamp(-ny, -1, 1)
             );
+        }
+        const peekHit = this.pickPeek();
+        if (peekHit !== this.peekHover) {
+            this.peekHover = peekHit;
+            this.peekOutline.uniforms.uColor.value.set(
+                peekHit ? 0x66ddc8 : 0x0b0d10
+            );
+            document.body.style.cursor =
+                peekHit || this.hovering ? "pointer" : "";
         }
         const hit = this.pick();
         if (hit !== this.hovering) {
@@ -310,6 +460,32 @@ export class Cameo {
             neck_pitch: THREE.MathUtils.clamp(hy * 0.35, -0.3, 0.5),
             waist_yaw: THREE.MathUtils.clamp(hx * 0.25, -0.4, 0.4),
         };
+    }
+
+    private pickPeek() {
+        if (!this.peek) return false;
+        this.raycaster.setFromCamera(this.ndc, this.peekCam);
+        this.bounds.setFromObject(this.peek.hips).expandByScalar(0.02);
+        // Only the part above the car counts: clicks on the car stay the car's.
+        const hit = this.raycaster.ray.intersectBox(this.bounds, this.tmp);
+        if (!hit) return false;
+        const p = this.tmp.clone().project(this.peekCam);
+        const sx = (p.x * 0.5 + 0.5) * window.innerWidth;
+        const sy = (-p.y * 0.5 + 0.5) * window.innerHeight;
+        const ctx = (carOutline as number[][]).map(([x, y]) =>
+            this.artToScreen(x, y)
+        );
+        let inside = false;
+        for (let i = 0, j = ctx.length - 1; i < ctx.length; j = i++) {
+            const a = ctx[i];
+            const b = ctx[j];
+            if (
+                a.y > sy !== b.y > sy &&
+                sx < ((b.x - a.x) * (sy - a.y)) / (b.y - a.y) + a.x
+            )
+                inside = !inside;
+        }
+        return !inside;
     }
 
     private headScreen() {
@@ -395,7 +571,55 @@ export class Cameo {
             window.innerHeight,
             1.6
         );
+        this.peekOutline.uniforms.uWidth.value = outlineWidth(
+            this.peekCam,
+            window.innerHeight,
+            1.4
+        );
+        const peek = this.peek;
+        if (peek) {
+            // Peeking Pioneer: holds the drawing's pose, eyes on the cursor, and wags its raised
+            // finger when hovered.
+            const pt: Pose = { ...PEEK_POSE };
+            const head = peek.links
+                .get("head")!
+                .getWorldPosition(this.tmp)
+                .project(this.peekCam);
+            const hx = (this.ndc.x - head.x) * 0.9;
+            const hy = this.ndc.y - head.y;
+            this.peekLook.lerp(new THREE.Vector2(hx, hy), Math.min(1, dt * 4));
+            pt.neck_yaw = THREE.MathUtils.clamp(this.peekLook.x + 0.15, -1, 1);
+            pt.neck_pitch = THREE.MathUtils.clamp(
+                -this.peekLook.y * 0.3 + 0.1,
+                -0.3,
+                0.45
+            );
+            if (this.peekHover && !this.reducedMotion) {
+                pt.l_forearm_roll = 0.2 + 0.5 * Math.sin(t * 10);
+                pt.l_wrist_flex = 0.3 * Math.sin(t * 10);
+            }
+            peek.joints.forEach((j, name) => {
+                const goal = pt[name] ?? 0;
+                if (Math.abs(goal - j.value) > 1e-5)
+                    peek.set(name, j.value + (goal - j.value) * k);
+            });
+            peek.ground();
+        }
+
+        // Sidewalk Pioneer, then the peeking one through the car-shaped stencil.
+        this.renderer.clear();
+        if (peek) peek.hips.visible = false;
         this.renderer.render(this.scene, this.camera);
+        if (peek) {
+            peek.hips.visible = true;
+            robot.hips.visible = false;
+            this.ground.visible = false;
+            this.renderer.clear(false, true, true);
+            this.renderer.render(this.maskScene, this.maskCam);
+            this.renderer.render(this.scene, this.peekCam);
+            robot.hips.visible = true;
+            this.ground.visible = true;
+        }
         this.cb.onHead?.(this.phase === "idle" ? this.headScreen() : null);
     };
 }
