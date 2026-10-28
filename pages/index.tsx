@@ -26,7 +26,7 @@ export default function Home() {
                         key={name}
                         href="/projects/humanoid"
                         aria-label="Pioneer, our humanoid robot"
-                        className="group pointer-events-auto absolute"
+                        className="group pointer-events-auto absolute outline-none [-webkit-tap-highlight-color:transparent] focus-visible:outline-2 focus-visible:outline-wato-teal"
                         style={artBox(x, y, w, h)}
                     >
                         {/* Hover outline for the still; the live 3D Pioneers draw their own. */}
