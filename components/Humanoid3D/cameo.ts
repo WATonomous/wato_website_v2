@@ -242,7 +242,7 @@ export class Cameo {
         for (const m of peek.meshes) {
             const mat = behindCar(makeComicMaterial(this.comicUniforms));
             // Painted a touch cooler, like the drawing's grey (its own lights do the rest).
-            (mat as THREE.MeshToonMaterial).color.setRGB(0.52, 0.6, 0.64);
+            (mat as THREE.MeshToonMaterial).color.setRGB(0.68, 0.76, 0.8);
             m.material = mat;
             m.castShadow = false;
             this.mats.push(mat);

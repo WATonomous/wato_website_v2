@@ -5,36 +5,28 @@ import type { Cameo } from "./cameo";
 const MODEL_URL = "/models/pioneer.glb";
 const HUMANOID_PAGE = "/projects/humanoid";
 
-const LINES: Record<string, string> = {
-    arrive: "Hey! I'm Pioneer 👋",
-    hover: "Click me! 69 joints inside →",
-    wave: "Hi there! 👋",
-    thumbs: "Nice cursor. 👍",
-    peace: "✌️ Built at UWaterloo",
-    count: "1… 2… 3… 22 DOF per hand!",
-};
+/** The only line, shown while the visitor hovers Pioneer. */
+const HOVER_LINE =
+    "We're building Pioneer, the first Canadian undergraduate humanoid →";
 
-/** The scene's other robots (their hover outlines in ProjectHighlights), in illustration coords. */
-const NEIGHBOURS: Record<string, { x: number; y: number; line: string }> = {
+/** The scene's other robots (their hover outlines in ProjectHighlights), in illustration coords:
+ * Pioneer points at whichever one the visitor hovers. */
+const NEIGHBOURS: Record<string, { x: number; y: number }> = {
     "/projects/eve": {
         x: 1650,
         y: 1300,
-        line: "That's Eve, our self-driving car 🚗",
     },
     "/projects/rover": {
         x: 960,
         y: 1760,
-        line: "Our rover! Off to the University Rover Challenge 🛞",
     },
     "/projects/micro": {
         x: 2550,
         y: 2100,
-        line: "Micro: 1:10 scale and it races 🏁",
     },
     "/projects/humanoid": {
         x: 2150,
         y: 1030,
-        line: "That's my twin, hiding behind Eve 👀",
     },
 };
 
@@ -71,19 +63,7 @@ const PioneerCameo = ({ onLive }: Props) => {
         let cancelled = false;
         let hovering = false;
         let pointing: string | null = null;
-        let move: string | undefined;
-        let arrived = false;
-        let arriveTimer = 0;
-        const pick = () =>
-            hovering
-                ? LINES.hover
-                : pointing
-                ? NEIGHBOURS[pointing].line
-                : move
-                ? LINES[move] ?? null
-                : arrived
-                ? LINES.arrive
-                : null;
+        const pick = () => (hovering ? HOVER_LINE : null);
 
         // Let the page and video settle first; the model is fetched in the background.
         const start = window.setTimeout(() => {
@@ -101,21 +81,9 @@ const PioneerCameo = ({ onLive }: Props) => {
                         document.body.style.cursor = h ? "pointer" : "";
                         setLine(pick());
                     },
-                    onMove: (id) => {
-                        move = id;
-                        setLine(pick());
-                    },
                     onHead: (p) => {
                         const b = bubbleRef.current;
                         if (!b) return;
-                        if (p && !arrived) {
-                            arrived = true;
-                            setLine(pick());
-                            arriveTimer = window.setTimeout(() => {
-                                arrived = false;
-                                setLine(pick());
-                            }, 4500);
-                        }
                         b.style.visibility = p ? "visible" : "hidden";
                         if (p)
                             b.style.transform = `translate(${p.x}px, ${p.y}px)`;
@@ -160,7 +128,6 @@ const PioneerCameo = ({ onLive }: Props) => {
         return () => {
             cancelled = true;
             window.clearTimeout(start);
-            window.clearTimeout(arriveTimer);
             window.removeEventListener("click", onClick, true);
             document.removeEventListener("pointerover", onOver);
             document.removeEventListener("pointerout", onOut);
@@ -190,7 +157,7 @@ const PioneerCameo = ({ onLive }: Props) => {
                         line ? "scale-100 opacity-100" : "scale-75 opacity-0"
                     }`}
                 >
-                    <div className="relative -rotate-2 whitespace-nowrap rounded-2xl border-[3px] border-black bg-white px-4 py-2 text-sm font-black uppercase tracking-tight text-black shadow-[4px_4px_0_#000]">
+                    <div className="relative w-[19rem] -rotate-2 rounded-2xl border-[3px] border-black bg-white px-4 py-2 text-sm font-black uppercase tracking-tight text-black shadow-[4px_4px_0_#000]">
                         {line}
                         <span className="absolute -bottom-[11px] right-6 h-4 w-4 rotate-45 border-b-[3px] border-r-[3px] border-black bg-white" />
                     </div>
