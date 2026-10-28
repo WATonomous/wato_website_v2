@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
 import ContentPane from "../../components/ContentPane";
-import Hero from "../../components/Hero";
+import PioneerPlayground from "../../components/Humanoid3D/PioneerPlayground";
 import CTASection from "../../components/CTASection";
 import MemberCard, { MemberCardProps } from "../../components/MemberCard";
 import { SponsorCardProps } from "../../components/Sponsor/SponsorCard";
@@ -95,15 +95,16 @@ const Humanoid = () => {
           content="Pioneer is UWaterloo's first humanoid robot, built by WATonomous - 22 DOF hand, bimanual arm, and 12 DOF legs."
         />
       </Head>
-      <Hero
-        image={heroImg}
+      {/* Fixed backdrop behind the translucent sections below the 3D hero. */}
+      <div className="fixed inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroImg.src})`, height: "100vh" }} />
+      <PioneerPlayground
         title={PAGE_TITLE}
         subtitle={HERO_TEXT}
         cta={"See More"}
         link={"#info"}
         secondaryCta={"Visit Our Documentation ↗"}
         secondaryLink={DOCS_LINK}
-        fixed
+        fallbackImage={heroImg.src}
       />
       <div id="info">
         <div className="relative flex flex-col items-center bg-black bg-opacity-90 py-32 lg:bg-opacity-80">
