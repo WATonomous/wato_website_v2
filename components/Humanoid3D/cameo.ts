@@ -221,6 +221,9 @@ export class Cameo {
         };
         for (const m of peek.meshes) {
             const mat = behindCar(makeComicMaterial(this.comicUniforms));
+            // It stands in the shop overhang's shade under the teal lantern: tint it to the
+            // drawing's cool grey (the drawn robot averages ~rgb(106,132,134)).
+            (mat as THREE.MeshToonMaterial).color.setRGB(0.34, 0.48, 0.62);
             m.material = mat;
             m.castShadow = false;
             this.mats.push(mat);
