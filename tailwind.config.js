@@ -18,7 +18,7 @@ module.exports = {
                 main: "url('/imgs/bg.jpg')",
                 network: "url('/imgs/network.png')",
                 badge: "linear-gradient(135deg, #1F5D96 20%, #46A3B1 80%)",
-                VideoPlaceholder: "url('/imgs/video_thumb.png')",
+                VideoPlaceholder: "url('/imgs/video_thumb_pioneer.jpg')",
             },
             boxShadow: {
                 NoOffset: "0 0px 25px -5px black",
