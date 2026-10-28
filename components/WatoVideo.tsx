@@ -1,16 +1,22 @@
 interface WatoVideoProps {
     transparent?: boolean;
     gutter?: boolean;
-    /** A second cut of the animation to cross-fade to (e.g. with the drawn robot painted out). */
-    altSrc?: string;
-    showAlt?: boolean;
+    /** Hide the still of the Pioneers (the landing page swaps in live 3D ones over it). */
+    hideStill?: boolean;
 }
-const WatoVideo = ({ transparent = false, gutter = false, altSrc, showAlt = false }: WatoVideoProps) => {
+
+// The alley animation (with the drawn robot painted out) and a still of the 3D Pioneers standing in
+// it. The video is object-cover and bottom-anchored over 4000x2244 art, so the still is placed with
+// the same mapping in pure CSS: one art pixel is `scale` CSS pixels.
+const scale = "max(100vw / 4000, 100vh / 2244)";
+const STILL = { x: 1836, y: 891, w: 1639, h: 965 };
+
+const WatoVideo = ({ transparent = false, gutter = false, hideStill = false }: WatoVideoProps) => {
     return (
         <div
             className={`${
                 transparent ? "opacity-30" : ""
-            } relative h-screen w-screen bg-VideoPlaceholder bg-cover bg-bottom`}
+            } relative h-screen w-screen overflow-hidden bg-VideoPlaceholder bg-cover bg-bottom`}
             style={{ scrollbarGutter: gutter ? "stable" : "unset" }}
         >
             <video
@@ -20,23 +26,21 @@ const WatoVideo = ({ transparent = false, gutter = false, altSrc, showAlt = fals
                 loop
                 className={`absolute inset-0 h-full w-full object-cover object-bottom`}
             >   
-                <source src="/imgs/wato-animation.mp4" />
+                <source src="/imgs/wato-animation-pioneer.mp4" />
                 
             </video>
-            {altSrc && (
-                <video
-                    autoPlay
-                    playsInline
-                    muted
-                    loop
-                    preload="auto"
-                    className={`absolute inset-0 h-full w-full object-cover object-bottom transition-opacity duration-700 ${
-                        showAlt ? "opacity-100" : "opacity-0"
-                    }`}
-                >
-                    <source src={altSrc} />
-                </video>
-            )}
+            <img
+                src="/imgs/pioneer-landing.png"
+                alt=""
+                aria-hidden
+                className={`pointer-events-none absolute max-w-none ${hideStill ? "invisible" : ""}`}
+                style={{
+                    left: `calc(50% + ${STILL.x - 2000} * ${scale})`,
+                    top: `calc(100% - ${2244 - STILL.y} * ${scale})`,
+                    width: `calc(${STILL.w} * ${scale})`,
+                    height: `calc(${STILL.h} * ${scale})`,
+                }}
+            />
         </div>
     );
 };

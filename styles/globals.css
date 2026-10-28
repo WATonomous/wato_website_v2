@@ -144,9 +144,3 @@ body {
         background-position: 0 0;
     }
 }
-
-/* Landing page: while the 3D Pioneer stands in for the drawn robot, hide that drawing's hover outline
-   (the link still works). */
-.pioneer-live a[href="/projects/humanoid"] {
-    opacity: 0 !important;
-}
