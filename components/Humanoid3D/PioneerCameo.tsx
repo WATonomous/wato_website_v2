@@ -7,7 +7,7 @@ const HUMANOID_PAGE = "/projects/humanoid";
 
 const LINES: Record<string, string> = {
     arrive: "Hey! I'm Pioneer 👋",
-    hover: "Click me! I've got 69 joints to show you →",
+    hover: "Click me! 69 joints inside →",
     wave: "Hi there! 👋",
     thumbs: "Nice cursor. 👍",
     peace: "✌️ Built at UWaterloo",
@@ -123,13 +123,13 @@ const PioneerCameo = () => {
                 style={{ visibility: "hidden" }}
             >
                 <div
-                    className={`absolute bottom-0 left-0 mb-[clamp(36px,4vw,64px)] -translate-x-[15%] transition-all duration-300 ${
+                    className={`absolute bottom-0 right-0 mb-[clamp(36px,4vw,64px)] origin-bottom-right translate-x-6 transition-all duration-300 ${
                         line ? "scale-100 opacity-100" : "scale-75 opacity-0"
                     }`}
                 >
                     <div className="relative -rotate-2 whitespace-nowrap rounded-2xl border-[3px] border-black bg-white px-4 py-2 text-sm font-black uppercase tracking-tight text-black shadow-[4px_4px_0_#000]">
                         {line}
-                        <span className="absolute -bottom-[11px] left-6 h-4 w-4 rotate-45 border-b-[3px] border-r-[3px] border-black bg-white" />
+                        <span className="absolute -bottom-[11px] right-6 h-4 w-4 rotate-45 border-b-[3px] border-r-[3px] border-black bg-white" />
                     </div>
                 </div>
             </div>

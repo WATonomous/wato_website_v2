@@ -41,7 +41,7 @@ export function makeComicMaterial(uniforms: ComicUniforms) {
                     float shade = clamp(1.0 - lum / base, 0.0, 1.0); // 0 lit .. 1 in shadow
                     vec2 p = mat2(0.7071, -0.7071, 0.7071, 0.7071) * gl_FragCoord.xy / uDot;
                     float d = length(fract(p) - 0.5);
-                    float r = smoothstep(0.25, 0.85, shade) * 0.5;
+                    float r = smoothstep(0.4, 0.95, shade) * 0.5;
                     float dotInk = 1.0 - smoothstep(r - 0.06, r + 0.06, d);
                     outgoingLight = mix(outgoingLight, uInk, dotInk * 0.8);
                 }

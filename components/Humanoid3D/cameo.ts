@@ -12,7 +12,7 @@ import {
 } from "./materials";
 
 /** Where Pioneer stands in the 4000x2244 illustration (feet), and how tall it is there. */
-const ANCHOR = { x: 3330, y: 1830, height: 600 };
+const ANCHOR = { x: 3330, y: 1830, height: 660 };
 const ART = { w: 4000, h: 2244 };
 const IDLE_MOVES = ["wave", "thumbs", "peace", "count"];
 
@@ -61,6 +61,7 @@ export class Cameo {
     private raycaster = new THREE.Raycaster();
     private ndc = new THREE.Vector2();
     private tmp = new THREE.Vector3();
+    private bounds = new THREE.Box3();
     private reducedMotion: boolean;
 
     constructor(
@@ -242,9 +243,9 @@ export class Cameo {
         if (!this.robot || !this.onScreen || this.phase === "enter")
             return false;
         this.raycaster.setFromCamera(this.ndc, this.camera);
-        return (
-            this.raycaster.intersectObjects(this.robot.meshes, false).length > 0
-        );
+        // The legs are thin trusses: count anything inside the body's (loose) bounds as a hit.
+        this.bounds.setFromObject(this.robot.hips).expandByScalar(0.03);
+        return this.raycaster.ray.intersectsBox(this.bounds);
     }
 
     private headScreen() {

@@ -4,13 +4,19 @@ Writes a GLB (one node per link, meshes in their link frame, vertex colours and 
 split into `<link>__glow` so it can be lit up) plus a kinematics JSON (joint tree with origins, axes
 and limits) that components/Humanoid3D rebuilds the robot from.
 
+The shipped model is built from the CAD's full-detail URDF export (OBJ meshes with their own
+normals, ~3.3M triangles), simplified by gltf-transform's meshopt simplifier:
+
     pip install trimesh numpy scipy networkx fast-simplification
-    python scripts/urdf_to_web.py \
-        <pioneer_humanoid>/assets/pioneer_whole_body_humanoid/pioneer_whole_body_humanoid.urdf \
-        /tmp/pioneer_raw.glb components/Humanoid3D/kinematics.json 240000
+    python scripts/urdf_to_web.py <full-detail URDF> /tmp/pioneer_raw.glb \
+        components/Humanoid3D/kinematics.json 0
     npx @gltf-transform/cli@4.2.1 optimize /tmp/pioneer_raw.glb public/models/pioneer.glb \
-        --compress meshopt --texture-compress false --simplify true --simplify-ratio 0.4 \
-        --simplify-error 0.004 --join false --flatten false --instance false --palette false
+        --compress meshopt --texture-compress false --simplify true --simplify-ratio 0.15 \
+        --simplify-error 0.0008 --join false --flatten false --instance false --palette false
+
+The decimated STL URDF in pioneer_humanoid (assets/pioneer_whole_body_humanoid) also works: its
+meshes have no normals, so they are welded, decimated to the triangle budget (last argument) and
+smoothed here instead.
 """
 import json
 import sys
@@ -45,19 +51,34 @@ for link in root.findall("link"):
         xyz = vec(origin.get("xyz") if origin is not None else None)
         scale = vec(mesh_el.get("scale"), "1 1 1")
         rgba = vec(vis.find("material/color").get("rgba"))
-        m = trimesh.load(base / mesh_el.get("filename"), force="mesh")
-        m.merge_vertices()
-        m.apply_scale(scale)
-        m.apply_translation(xyz)
-        visuals.append((link.get("name"), m, rgba))
+        path = base / mesh_el.get("filename")
+        # A full-detail OBJ export carries the CAD's own normals: keep them (and its triangles,
+        # left for gltf-transform's simplifier). Meshes without normals get welded and smoothed.
+        has_normals = path.suffix == ".obj" and "\nvn " in path.read_text()
+        m = trimesh.load(path, force="mesh", process=False)
+        if has_normals:
+            normals = np.asarray(m.vertex_normals).copy()
+            m = trimesh.Trimesh(m.vertices * scale, m.faces, vertex_normals=normals, process=False)
+            m.apply_translation(xyz)
+        else:
+            m.merge_vertices()
+            m.apply_scale(scale)
+            m.apply_translation(xyz)
+        visuals.append((link.get("name"), m, rgba, has_normals))
 
-total = sum(len(m.faces) for _, m, _ in visuals)
+total = sum(len(m.faces) for _, m, _, _ in visuals)
 ratio = min(1.0, target_total / total)
 print(f"{total} tris -> ratio {ratio:.3f}")
 
 per_link = {}
-for name, m, rgba in visuals:
+for name, m, rgba, has_normals in visuals:
     n = len(m.faces)
+    if has_normals:
+        col = (np.array(rgba) * 255).round().astype(np.uint8)
+        m.visual = trimesh.visual.ColorVisuals(m, vertex_colors=np.tile(col, (len(m.vertices), 1)))
+        key = name + "__glow" if rgba[:3] == [0.812, 0.953, 1.0] else name
+        per_link.setdefault(key, []).append(m)
+        continue
     keep = max(min(n, 300), int(n * ratio))
     if keep < n:
         v, f = fast_simplification.simplify(
