@@ -1,4 +1,4 @@
-"""Convert the Pioneer whole-body URDF into the web model used by the humanoid page's 3D hero.
+"""Convert the Pioneer whole-body URDF into the web model used by the site's 3D Pioneer.
 
 Writes a GLB (one node per link, meshes in their link frame, vertex colours and normals; the visor
 split into `<link>__glow` so it can be lit up) plus a kinematics JSON (joint tree with origins, axes
