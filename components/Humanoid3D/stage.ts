@@ -1,6 +1,17 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import {
+    buildCreases,
+    buildHulls,
+    makeComicMaterial,
+    makeOutlineMaterial,
+    outlineWidth,
+} from "./materials";
 import { PioneerRobot, Joint, prettyJoint } from "./robot";
 import { MOVE_BY_ID, Move, Pose, REST } from "./moves";
 
@@ -17,7 +28,142 @@ export interface HoverInfo {
     dragging: boolean;
 }
 
-export type RenderMode = "studio" | "hologram";
+export type RenderMode = "studio" | "hologram" | "comic" | "blueprint";
+
+interface ModeLook {
+    bloom: number; // bloom strength, 0 = off
+    floor: boolean;
+    floorColor: string;
+    dust: boolean;
+    shadow: number;
+    outline?: { color: string; px: number };
+    creases?: { color: string; opacity: number };
+    exposure: number;
+    rim?: number; // scales the coloured rim lights
+}
+
+const LOOKS: Record<RenderMode, ModeLook> = {
+    studio: {
+        bloom: 0.55,
+        floor: true,
+        floorColor: "#66DDC8",
+        dust: true,
+        shadow: 0.45,
+        exposure: 0.9,
+    },
+    hologram: {
+        bloom: 1.25,
+        floor: true,
+        floorColor: "#66DDC8",
+        dust: true,
+        shadow: 0,
+        exposure: 0.9,
+    },
+    comic: {
+        bloom: 0,
+        floor: false,
+        floorColor: "#000000",
+        dust: false,
+        shadow: 0.55,
+        outline: { color: "#0b0d10", px: 2.6 },
+        creases: { color: "#0b0d10", opacity: 0.85 },
+        exposure: 1.05,
+        rim: 0.25,
+    },
+    blueprint: {
+        bloom: 0.35,
+        floor: true,
+        floorColor: "#cfe6ff",
+        dust: false,
+        shadow: 0,
+        outline: { color: "#eaf4ff", px: 1.6 },
+        creases: { color: "#eaf4ff", opacity: 0.7 },
+        exposure: 0.9,
+    },
+};
+
+/** Full-screen backdrops, painted once per mode into a canvas texture. */
+function backdrop(mode: RenderMode): THREE.CanvasTexture {
+    const c = document.createElement("canvas");
+    c.width = 1024;
+    c.height = 1024;
+    const g = c.getContext("2d")!;
+    const radial = (stops: [number, string][]) => {
+        const gr = g.createRadialGradient(600, 420, 0, 600, 420, 760);
+        for (const [o, col] of stops) gr.addColorStop(o, col);
+        g.fillStyle = gr;
+        g.fillRect(0, 0, 1024, 1024);
+    };
+    if (mode === "comic") {
+        radial([
+            [0, "#fff6dd"],
+            [0.6, "#f6e3b8"],
+            [1, "#e8c98d"],
+        ]);
+        // halftone vignette
+        g.fillStyle = "rgba(180,70,40,0.22)";
+        for (let y = 0; y < 1024; y += 14)
+            for (let x = (y / 14) % 2 ? 7 : 0; x < 1024; x += 14) {
+                const d = Math.hypot(x - 600, y - 420) / 760;
+                const r = Math.max(0, d - 0.35) * 9;
+                if (r > 0.3) {
+                    g.beginPath();
+                    g.arc(x, y, r, 0, Math.PI * 2);
+                    g.fill();
+                }
+            }
+        // speed lines
+        g.strokeStyle = "rgba(20,20,20,0.07)";
+        g.lineWidth = 3;
+        for (let i = 0; i < 64; i++) {
+            const a = (i / 64) * Math.PI * 2;
+            g.beginPath();
+            g.moveTo(600 + Math.cos(a) * 420, 420 + Math.sin(a) * 420);
+            g.lineTo(600 + Math.cos(a) * 1200, 420 + Math.sin(a) * 1200);
+            g.stroke();
+        }
+    } else if (mode === "blueprint") {
+        radial([
+            [0, "#1f5d96"],
+            [1, "#0b2a4d"],
+        ]);
+        g.strokeStyle = "rgba(220,235,255,0.08)";
+        g.lineWidth = 1;
+        for (let i = 0; i <= 1024; i += 16) {
+            g.beginPath();
+            g.moveTo(i, 0);
+            g.lineTo(i, 1024);
+            g.moveTo(0, i);
+            g.lineTo(1024, i);
+            g.stroke();
+        }
+        g.strokeStyle = "rgba(220,235,255,0.18)";
+        for (let i = 0; i <= 1024; i += 128) {
+            g.beginPath();
+            g.moveTo(i, 0);
+            g.lineTo(i, 1024);
+            g.moveTo(0, i);
+            g.lineTo(1024, i);
+            g.stroke();
+        }
+    } else {
+        radial(
+            mode === "hologram"
+                ? [
+                      [0, "#06201f"],
+                      [1, "#010304"],
+                  ]
+                : [
+                      [0, "#0f2a2a"],
+                      [0.45, "#071013"],
+                      [1, "#030506"],
+                  ]
+        );
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+}
 
 interface StageCallbacks {
     onProgress?: (p: number) => void;
@@ -107,6 +253,30 @@ export class Stage {
     explodeTarget = 0;
     private mode: RenderMode = "studio";
     private studioMats = new Map<THREE.Mesh, THREE.Material>();
+    private comicMats = new Map<THREE.Mesh, THREE.Material>();
+    private blueprintMat = new THREE.MeshBasicMaterial({
+        color: 0x2a6bb5,
+        transparent: true,
+        opacity: 0.28,
+        depthWrite: true,
+    });
+    private comicUniforms = {
+        uInk: { value: new THREE.Color(0x1a1410) },
+        uDot: { value: 5 },
+    };
+    private outlineMat = makeOutlineMaterial();
+    private creaseMat = new THREE.LineBasicMaterial({
+        color: 0x0b0d10,
+        transparent: true,
+    });
+    private hulls?: THREE.Mesh[];
+    private creases?: THREE.LineSegments[];
+    private backdrops = new Map<RenderMode, THREE.Texture>();
+    private composer: EffectComposer;
+    private bloom: UnrealBloomPass;
+    private floor: THREE.Mesh;
+    private shadowCatcher: THREE.Mesh;
+    private rims: [THREE.DirectionalLight, number][] = [];
     private holoMat: THREE.ShaderMaterial;
     private glowMat: THREE.MeshStandardMaterial;
     private floorMat: THREE.ShaderMaterial;
@@ -152,6 +322,17 @@ export class Stage {
             powerPreference: "high-performance",
         });
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+        // Bloom makes the visor, hover glow, floor rings and hologram actually glow.
+        this.composer = new EffectComposer(this.renderer);
+        this.composer.addPass(new RenderPass(this.scene, this.camera));
+        this.bloom = new UnrealBloomPass(
+            new THREE.Vector2(256, 256),
+            0.55,
+            0.45,
+            0.82
+        );
+        this.composer.addPass(this.bloom);
+        this.composer.addPass(new OutputPass());
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = 0.9;
@@ -199,9 +380,11 @@ export class Stage {
         const rim = new THREE.DirectionalLight(TEAL, 6);
         rim.position.set(-2.5, 2.5, -3);
         this.scene.add(rim);
+        this.rims.push([rim, rim.intensity]);
         const rim2 = new THREE.DirectionalLight(0x4a7eb3, 4);
         rim2.position.set(3, 1.5, -2.5);
         this.scene.add(rim2);
+        this.rims.push([rim2, rim2.intensity]);
         this.scene.add(new THREE.HemisphereLight(0x9fb8d0, 0x101418, 0.35));
 
         for (const c of [0xff3fa4, 0x66ddc8, 0x5b7cff, 0xffc94a]) {
@@ -230,6 +413,7 @@ export class Stage {
         floor.rotation.x = -Math.PI / 2;
         floor.position.y = 0.001;
         this.scene.add(floor);
+        this.floor = floor;
         const shadow = new THREE.Mesh(
             new THREE.CircleGeometry(2.5, 64),
             new THREE.ShadowMaterial({ opacity: 0.45 })
@@ -237,6 +421,8 @@ export class Stage {
         shadow.rotation.x = -Math.PI / 2;
         shadow.receiveShadow = true;
         this.scene.add(shadow);
+        this.shadowCatcher = shadow;
+        this.scene.background = this.backdropFor("studio");
 
         // Floating dust motes.
         const n = 260;
@@ -319,6 +505,9 @@ export class Stage {
             for (const [k, v] of Object.entries(REST)) robot.set(k, v);
             robot.ground();
             this.scene.add(robot.hips);
+            const mode = this.mode;
+            this.mode = "studio";
+            this.setMode(mode);
             this.pulse();
             this.cb.onReady?.(robot);
         } catch (e) {
@@ -361,6 +550,12 @@ export class Stage {
             if (m.geometry) m.geometry.dispose();
         });
         this.studioMats.forEach((m) => m.dispose());
+        this.comicMats.forEach((m) => m.dispose());
+        this.blueprintMat.dispose();
+        this.outlineMat.dispose();
+        this.creaseMat.dispose();
+        this.backdrops.forEach((t) => t.dispose());
+        this.composer.dispose();
         this.holoMat.dispose();
         this.glowMat.dispose();
         this.floorMat.dispose();
@@ -411,15 +606,65 @@ export class Stage {
         this.disco = on ? 1 : 0;
     }
 
-    setMode(mode: RenderMode) {
-        if (!this.robot || mode === this.mode) return;
-        this.mode = mode;
-        for (const m of this.robot.meshes) {
-            m.material =
-                mode === "hologram" ? this.holoMat : this.studioMats.get(m)!;
-            m.castShadow = mode === "studio";
+    private backdropFor(mode: RenderMode) {
+        let t = this.backdrops.get(mode);
+        if (!t) {
+            t = backdrop(mode);
+            this.backdrops.set(mode, t);
         }
-        this.keyLight.castShadow = mode === "studio";
+        return t;
+    }
+
+    private materialFor(m: THREE.Mesh, mode: RenderMode): THREE.Material {
+        if (mode === "hologram") return this.holoMat;
+        if (mode === "blueprint") return this.blueprintMat;
+        if (mode === "comic") {
+            let mat = this.comicMats.get(m);
+            if (!mat) {
+                mat = makeComicMaterial(this.comicUniforms);
+                this.comicMats.set(m, mat);
+            }
+            return mat;
+        }
+        return this.studioMats.get(m)!;
+    }
+
+    setMode(mode: RenderMode) {
+        if (!this.robot) {
+            this.mode = mode;
+            return;
+        }
+        if (mode === this.mode) return;
+        this.setHighlight(undefined);
+        this.mode = mode;
+        const look = LOOKS[mode];
+        if (look.outline && !this.hulls)
+            this.hulls = buildHulls(this.robot.meshes, this.outlineMat);
+        if (look.creases && !this.creases)
+            this.creases = buildCreases(this.robot.meshes, this.creaseMat);
+        for (const m of this.robot.meshes) {
+            m.material = this.materialFor(m, mode);
+            m.castShadow = look.shadow > 0;
+        }
+        this.hulls?.forEach((h) => (h.visible = !!look.outline));
+        this.creases?.forEach((l) => (l.visible = !!look.creases));
+        if (look.outline)
+            this.outlineMat.uniforms.uColor.value.set(look.outline.color);
+        if (look.creases) {
+            this.creaseMat.color.set(look.creases.color);
+            this.creaseMat.opacity = look.creases.opacity;
+        }
+        this.keyLight.castShadow = look.shadow > 0;
+        (this.shadowCatcher.material as THREE.ShadowMaterial).opacity =
+            look.shadow;
+        this.floor.visible = look.floor;
+        this.floorMat.uniforms.uColor.value.set(look.floorColor);
+        this.dust.visible = look.dust;
+        this.bloom.enabled = look.bloom > 0;
+        this.bloom.strength = look.bloom;
+        this.renderer.toneMappingExposure = look.exposure;
+        for (const [l, i] of this.rims) l.intensity = i * (look.rim ?? 1);
+        this.scene.background = this.backdropFor(mode);
         this.pulse();
     }
 
@@ -536,8 +781,16 @@ export class Stage {
                 );
         }
 
+        const look = LOOKS[this.mode];
+        if (look.outline)
+            this.outlineMat.uniforms.uWidth.value = outlineWidth(
+                this.camera,
+                this.host.clientHeight,
+                look.outline.px
+            );
         this.controls.update();
-        this.renderer.render(this.scene, this.camera);
+        if (this.bloom.enabled) this.composer.render(dt);
+        else this.renderer.render(this.scene, this.camera);
     }
 
     private direct(dt: number) {
@@ -588,6 +841,8 @@ export class Stage {
         const h = this.host.clientHeight;
         if (!w || !h) return;
         this.renderer.setSize(w, h, false);
+        this.composer.setSize(w, h);
+        this.bloom.resolution.set(w / 2, h / 2);
         this.camera.aspect = w / h;
         // Keep the whole robot in frame on tall/narrow screens.
         this.camera.fov = w / h < 0.8 ? 42 : 30;
@@ -641,9 +896,8 @@ export class Stage {
         const paint = (jj: Joint | undefined, on: boolean) => {
             if (!jj) return;
             for (const m of this.subtreeMeshes(jj)) {
-                const mat = this.studioMats.get(
-                    m
-                ) as THREE.MeshStandardMaterial;
+                const mat = m.material as THREE.MeshStandardMaterial;
+                if (!mat.emissive) continue;
                 mat.emissive.copy(on ? TEAL : new THREE.Color(0));
                 mat.emissiveIntensity = on ? 0.35 : 0;
             }

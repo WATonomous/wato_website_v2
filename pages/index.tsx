@@ -1,6 +1,7 @@
 import Link from "next/link";
 import WatoVideo from "../components/WatoVideo";
 import ProjectHighlights from "../components/ProjectHighlights";
+import PioneerCameo from "../components/Humanoid3D/PioneerCameo";
 
 export default function Home() {
     return (
@@ -8,6 +9,7 @@ export default function Home() {
             <Link href="/about" className="fixed">
                 <WatoVideo />
             </Link>
+            <PioneerCameo />
             {/* //Links are internal to the highlight component; div blocks the links on mobile */}
             <div className="[@media(hover:none)_and_(pointer:coarse){&}]:hidden">
                 <ProjectHighlights/>

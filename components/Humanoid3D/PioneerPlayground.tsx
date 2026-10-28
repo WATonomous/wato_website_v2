@@ -287,7 +287,7 @@ const PioneerPlayground = ({
                 say(
                     `Moves: ${MOVES.map((m) => m.id).join(
                         ", "
-                    )}. Also: holo, studio, explode, assemble, disco, mirror, reset, stats.`
+                    )}. Also: studio, holo, comic, blueprint, explode, assemble, disco, mirror, reset, stats.`
                 );
                 break;
             case "holo":
@@ -295,6 +295,20 @@ const PioneerPlayground = ({
             case "xray":
                 setMode("hologram");
                 say("Switching to hologram render.");
+                break;
+            case "comic":
+            case "toon":
+                setMode("comic");
+                say(
+                    "POW! Comic-book renderer: cel shading, ink lines, halftone dots."
+                );
+                break;
+            case "blueprint":
+            case "cad":
+                setMode("blueprint");
+                say(
+                    "Blueprint view: every crease of the CAD as a line drawing."
+                );
                 break;
             case "studio":
                 setMode("studio");
@@ -448,7 +462,7 @@ const PioneerPlayground = ({
                 {/* Playground UI */}
                 {playing && (
                     <>
-                        <div className="pointer-events-none absolute left-4 top-4 text-white md:left-8 md:top-8">
+                        <div className="pointer-events-none absolute left-4 top-4 rounded-md bg-black/40 px-3 py-2 text-white backdrop-blur-sm md:left-8 md:top-8">
                             <div className="text-lg font-black md:text-2xl">
                                 PIONEER&nbsp;
                                 <span className="text-wato-teal">{"//"}</span>
@@ -576,7 +590,12 @@ const PioneerPlayground = ({
                             <div className="flex w-full max-w-4xl flex-wrap items-center justify-center gap-2 text-sm text-white">
                                 <div className="flex overflow-hidden rounded-full border border-white/20">
                                     {(
-                                        ["studio", "hologram"] as RenderMode[]
+                                        [
+                                            "studio",
+                                            "hologram",
+                                            "comic",
+                                            "blueprint",
+                                        ] as RenderMode[]
                                     ).map((m) => (
                                         <button
                                             key={m}

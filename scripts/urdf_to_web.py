@@ -64,7 +64,9 @@ for name, m, rgba in visuals:
             m.vertices.astype(np.float32), m.faces.astype(np.int32), 1 - keep / n
         )
         m = trimesh.Trimesh(v, f, process=True)
-    m = m.smooth_shaded if hasattr(m, "smooth_shaded") else m
+    # Smooth across creases up to 60 degrees: the CAD export is already coarse, and the default
+    # threshold leaves curved parts looking faceted.
+    m = trimesh.graph.smooth_shade(m, angle=np.radians(60))
     col = (np.array(rgba) * 255).round().astype(np.uint8)
     m.visual = trimesh.visual.ColorVisuals(m, vertex_colors=np.tile(col, (len(m.vertices), 1)))
     key = name + "__glow" if rgba[:3] == [0.812, 0.953, 1.0] else name
