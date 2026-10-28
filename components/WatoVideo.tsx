@@ -1,3 +1,5 @@
+import { artBox, PIONEER_STILL } from "./Humanoid3D/artBox";
+
 interface WatoVideoProps {
     transparent?: boolean;
     gutter?: boolean;
@@ -5,12 +7,7 @@ interface WatoVideoProps {
     hideStill?: boolean;
 }
 
-// The alley animation (with the drawn robot painted out) and a still of the 3D Pioneers standing in
-// it. The video is object-cover and bottom-anchored over 4000x2244 art, so the still is placed with
-// the same mapping in pure CSS: one art pixel is `scale` CSS pixels.
-const scale = "max(100vw / 4000, 100vh / 2244)";
-const STILL = { x: 1836, y: 891, w: 1639, h: 965 };
-
+// The alley animation (with the drawn robot painted out) and a still of the 3D Pioneers standing in it.
 const WatoVideo = ({ transparent = false, gutter = false, hideStill = false }: WatoVideoProps) => {
     return (
         <div
@@ -34,12 +31,7 @@ const WatoVideo = ({ transparent = false, gutter = false, hideStill = false }: W
                 alt=""
                 aria-hidden
                 className={`pointer-events-none absolute max-w-none ${hideStill ? "invisible" : ""}`}
-                style={{
-                    left: `calc(50% + ${STILL.x - 2000} * ${scale})`,
-                    top: `calc(100% - ${2244 - STILL.y} * ${scale})`,
-                    width: `calc(${STILL.w} * ${scale})`,
-                    height: `calc(${STILL.h} * ${scale})`,
-                }}
+                style={artBox(PIONEER_STILL.x, PIONEER_STILL.y, PIONEER_STILL.w, PIONEER_STILL.h)}
             />
         </div>
     );
