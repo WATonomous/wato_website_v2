@@ -65,7 +65,25 @@ const PioneerCameo = ({ onLive }: Props) => {
         let pointing: string | null = null;
         const pick = () => (hovering ? HOVER_LINE : null);
 
-        const start = window.setTimeout(() => {
+        // Let the page settle first: start once the background video is playing (or after 3 s),
+        // in idle time, so the 3D never holds up the rain animation.
+        let started = false;
+        const start = () => {
+            if (started || cancelled) return;
+            started = true;
+            const idle =
+                (window as any).requestIdleCallback ??
+                ((f: () => void) => setTimeout(f, 200));
+            idle(() => {
+                if (!cancelled) begin();
+            });
+        };
+        const video = document.querySelector("video");
+        if (video && !video.paused && video.readyState >= 3) start();
+        else video?.addEventListener("playing", start, { once: true });
+        const fallback = window.setTimeout(start, 3000);
+
+        const begin = () => {
             import("./cameo").then(({ Cameo }) => {
                 if (cancelled || !canvasRef.current) return;
                 cameo = new Cameo(canvasRef.current, {
@@ -94,7 +112,7 @@ const PioneerCameo = ({ onLive }: Props) => {
                 cameoRef.current = cameo;
                 cameo.load(MODEL_URL).catch(() => undefined);
             });
-        }, 0);
+        };
 
         // Clicking Pioneer opens its page instead of the scene's default link.
         const onClick = (e: MouseEvent) => {
@@ -129,7 +147,8 @@ const PioneerCameo = ({ onLive }: Props) => {
 
         return () => {
             cancelled = true;
-            window.clearTimeout(start);
+            window.clearTimeout(fallback);
+            video?.removeEventListener("playing", start);
             window.removeEventListener("click", onClick, true);
             document.removeEventListener("pointerover", onOver);
             document.removeEventListener("pointerout", onOut);

@@ -1,4 +1,3 @@
-import Head from "next/head";
 import Link from "next/link";
 import { useState } from "react";
 import WatoVideo from "../components/WatoVideo";
@@ -11,16 +10,6 @@ export default function Home() {
     const [pioneerLive, setPioneerLive] = useState(false);
     return (
         <div className="z-0 w-screen h-screen cursor-pointer overflow-hidden bg-VideoPlaceholder bg-cover">
-            <Head>
-                {/* Start fetching the 3D model with the page, on the screens that use it (see PioneerCameo). */}
-                <link
-                    rel="preload"
-                    href="/models/pioneer.glb"
-                    as="fetch"
-                    crossOrigin="anonymous"
-                    media="(hover: hover) and (min-aspect-ratio: 23/20)"
-                />
-            </Head>
             <Link href="/about" className="fixed">
                 <WatoVideo hideStill={pioneerLive} />
             </Link>
@@ -32,14 +21,23 @@ export default function Home() {
             {/* Click targets over both Pioneers, live from the first paint (on phones too), so they
                 open the humanoid page even before the 3D has loaded. */}
             <div className="pointer-events-none fixed inset-0">
-                {PIONEER_HOTSPOTS.map(([x, y, w, h]) => (
+                {PIONEER_HOTSPOTS.map(({ name, x, y, w, h }) => (
                     <Link
-                        key={x}
+                        key={name}
                         href="/projects/humanoid"
                         aria-label="Pioneer, our humanoid robot"
-                        className="pointer-events-auto absolute"
+                        className="group pointer-events-auto absolute outline-none [-webkit-tap-highlight-color:transparent] focus-visible:outline-2 focus-visible:outline-wato-teal"
                         style={artBox(x, y, w, h)}
-                    />
+                    >
+                        {/* Hover outline for the still; the live 3D Pioneers draw their own. */}
+                        {!pioneerLive && (
+                            <img
+                                src={`/imgs/pioneer-outline-${name}.png`}
+                                alt=""
+                                className="h-full w-full opacity-0 transition-opacity group-hover:opacity-100"
+                            />
+                        )}
+                    </Link>
                 ))}
             </div>
             <div className="fixed z-0 h-screen w-screen bg-TopGradient pointer-events-none" />

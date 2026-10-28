@@ -103,6 +103,37 @@ export function buildCreases(
     return lines;
 }
 
+const nextFrame = () =>
+    new Promise<void>((r) => requestAnimationFrame(() => r()));
+
+/**
+ * `buildCreases` without freezing the page: works through the meshes in ~8 ms slices, one per
+ * frame, and reuses the edges of any geometry already done (pass the same `cache` for robots that
+ * share their meshes' geometry).
+ */
+export async function buildCreasesAsync(
+    meshes: THREE.Mesh[],
+    material: THREE.LineBasicMaterial,
+    angle: number,
+    cache: Map<THREE.BufferGeometry, THREE.EdgesGeometry>
+) {
+    let t = performance.now();
+    for (const m of meshes) {
+        let edges = cache.get(m.geometry);
+        if (!edges) {
+            edges = new THREE.EdgesGeometry(m.geometry, angle);
+            cache.set(m.geometry, edges);
+        }
+        const l = new THREE.LineSegments(edges, material);
+        l.raycast = () => undefined;
+        m.add(l);
+        if (performance.now() - t > 8) {
+            await nextFrame();
+            t = performance.now();
+        }
+    }
+}
+
 export function buildHulls(
     meshes: THREE.Mesh[],
     material: THREE.ShaderMaterial
