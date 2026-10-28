@@ -120,6 +120,11 @@ for j in root.findall("joint"):
             "upper": float(limit.get("upper")) if limit is not None else 0.0,
         }
     )
+# The full-detail export's knees turn about +x, so their only allowed direction (negative) swings the
+# shin forward: a backwards knee. Flip them to -x (as in the team's leg model) so negative is flexion.
+for j in joints:
+    if j["name"] in ("Knee_L", "Knee_R") and j["axis"][0] > 0:
+        j["axis"] = [-v for v in j["axis"]]
 links = [l.get("name") for l in root.findall("link")]
 children = {j["child"] for j in joints}
 rootlink = [l for l in links if l not in children][0]

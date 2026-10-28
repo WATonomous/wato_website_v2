@@ -50,7 +50,9 @@ const COUNT: number[][] = [
 ];
 
 function legs(hip: number, side?: Side): Pose {
-    // Hip, knee and ankle pitch that keep the foot flat: ankle = hip + knee.
+    // Hip, knee and ankle pitch that keep the foot flat: ankle = hip + knee. The knee stops at 65°
+    // (-1.13 rad), so cap the bend there; past it the knee clamps and the feet tip.
+    hip = Math.min(hip, 0.56);
     const knee = -2 * hip;
     const out: Pose = {};
     for (const s of side ? [side] : (["l", "r"] as Side[])) {
