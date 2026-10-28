@@ -189,7 +189,7 @@ export class Cameo {
         const peekFill = new THREE.HemisphereLight(0x6f8f99, 0x1a1a1c, 0);
         for (const l of [peekKey, peekRim]) l.target = peekTarget;
         this.scene.add(peekKey, peekRim, peekFill);
-        this.peekLights.push([peekKey, 2.6], [peekRim, 1.6], [peekFill, 0.7]);
+        this.peekLights.push([peekKey, 3.2], [peekRim, 1.6], [peekFill, 1.1]);
 
         const ground = new THREE.Mesh(
             new THREE.PlaneGeometry(12, 6),
@@ -242,7 +242,7 @@ export class Cameo {
         for (const m of peek.meshes) {
             const mat = behindCar(makeComicMaterial(this.comicUniforms));
             // Painted a touch cooler, like the drawing's grey (its own lights do the rest).
-            (mat as THREE.MeshToonMaterial).color.setRGB(0.68, 0.76, 0.8);
+            (mat as THREE.MeshToonMaterial).color.setRGB(0.9, 0.95, 0.98);
             m.material = mat;
             m.castShadow = false;
             this.mats.push(mat);
