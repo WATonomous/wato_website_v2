@@ -1,8 +1,9 @@
 // Landing-page cameo: Pioneer, cel-shaded with ink lines so it reads as part of the illustrated alley,
-// walks in and stands on the sidewalk, watches the cursor, and waves when hovered.
+// walks in and stands on the sidewalk, watches the cursor, waves when hovered, and points at whichever
+// of the scene's other robots the visitor hovers.
 import * as THREE from "three";
 import { PioneerRobot } from "./robot";
-import { MOVE_BY_ID, Move, Pose, REST } from "./moves";
+import { MOVE_BY_ID, Move, Pose, REST, hand } from "./moves";
 import {
     buildCreases,
     buildHulls,
@@ -15,6 +16,7 @@ import {
 const ANCHOR = { x: 3330, y: 1830, height: 660 };
 const ART = { w: 4000, h: 2244 };
 const IDLE_MOVES = ["wave", "thumbs", "peace", "count"];
+const POINT = hand("r", [0.8, 0, 1, 1, 1]);
 
 export interface CameoCallbacks {
     onReady?: () => void;
@@ -62,6 +64,8 @@ export class Cameo {
     private ndc = new THREE.Vector2();
     private tmp = new THREE.Vector3();
     private bounds = new THREE.Box3();
+    private pointing: { x: number; y: number } | null = null; // illustration coords
+    private lantern!: THREE.DirectionalLight;
     private reducedMotion: boolean;
 
     constructor(
@@ -101,6 +105,7 @@ export class Cameo {
         });
         this.scene.add(key);
         const lantern = new THREE.DirectionalLight(0x66ddc8, 1.4);
+        this.lantern = lantern;
         lantern.position.set(-2, 4, 1.5);
         this.scene.add(lantern);
         this.scene.add(new THREE.HemisphereLight(0xbfd8e0, 0x2a2018, 1.1));
@@ -169,6 +174,23 @@ export class Cameo {
     }
 
     // ---------------------------------------------------------------- layout
+
+    /** Turn and point at a spot in the illustration (null to stop). */
+    pointAt(p: { x: number; y: number } | null) {
+        this.pointing = p;
+        if (p && this.move) {
+            this.move = undefined;
+            this.cb.onMove?.(undefined);
+        }
+    }
+
+    /** Illustration coordinates to viewport CSS px. */
+    private artToScreen(x: number, y: number) {
+        const W = window.innerWidth;
+        const H = window.innerHeight;
+        const s = Math.max(W / ART.w, H / ART.h);
+        return { x: (W - ART.w * s) / 2 + x * s, y: H - ART.h * s + y * s };
+    }
 
     /** Map the illustration (object-cover, bottom-anchored, like the video) to the viewport. */
     private anchorOnScreen() {
@@ -248,6 +270,45 @@ export class Cameo {
         return this.raycaster.ray.intersectsBox(this.bounds);
     }
 
+    /**
+     * Right arm straight out towards the target as seen on screen (the scene's robots are all to
+     * Pioneer's right), angle measured in the body's frontal plane like the webcam retargeting.
+     */
+    private pointPose(): Pose | null {
+        const robot = this.robot!;
+        const p = this.pointing!;
+        const target = this.artToScreen(p.x, p.y);
+        robot.links
+            .get("r_arm_link1")!
+            .getWorldPosition(this.tmp)
+            .project(this.camera);
+        const sx = (this.tmp.x * 0.5 + 0.5) * window.innerWidth;
+        const sy = (-this.tmp.y * 0.5 + 0.5) * window.innerHeight;
+        const outward = Math.max(0, sx - target.x);
+        const up = sy - target.y;
+        const phi = Math.atan2(outward + 1, -up); // 0 = arm down, PI/2 = straight out
+        const over = THREE.MathUtils.clamp((phi - 1.35) / 0.5, 0, 1);
+        const head = this.headScreen();
+        const hx = head
+            ? (target.x - head.x) / (window.innerWidth * 0.5)
+            : -0.5;
+        const hy = head ? (target.y - head.y) / (window.innerHeight * 0.5) : 0;
+        return {
+            r_shoulder_pitch: -0.25 - Math.PI * over * over * (3 - 2 * over),
+            r_shoulder_roll: THREE.MathUtils.clamp(
+                phi <= Math.PI / 2 ? phi : Math.PI - phi,
+                0,
+                1.57
+            ),
+            r_elbow: -0.05,
+            r_forearm_roll: 0,
+            ...POINT,
+            neck_yaw: THREE.MathUtils.clamp(hx * 0.9 + 0.3, -1.2, 1.2),
+            neck_pitch: THREE.MathUtils.clamp(hy * 0.35, -0.3, 0.5),
+            waist_yaw: THREE.MathUtils.clamp(hx * 0.25, -0.4, 0.4),
+        };
+    }
+
     private headScreen() {
         const head = this.robot?.links.get("head");
         if (!head || !this.onScreen) return null;
@@ -295,7 +356,11 @@ export class Cameo {
                 );
             }
             this.look.lerp(this.lookTarget, Math.min(1, dt * 4));
-            if (!this.move?.ownsHead) {
+            const point =
+                this.pointing && !this.hovering ? this.pointPose() : null;
+            if (point) {
+                Object.assign(target, point);
+            } else if (!this.move?.ownsHead) {
                 // Head yaw is in the robot's frame; it is turned -0.35 rad towards the street.
                 target.neck_yaw =
                     (target.neck_yaw ?? 0) + this.look.x * 0.9 + 0.3;
@@ -306,6 +371,10 @@ export class Cameo {
             target.waist_yaw =
                 (target.waist_yaw ?? 0) + 0.02 * Math.sin(t * 0.8);
         }
+
+        // Lanterns sway a little in the wind.
+        this.lantern.intensity =
+            1.4 + 0.15 * Math.sin(t * 2.1) * Math.sin(t * 0.7 + 1);
 
         const k =
             1 - Math.exp(-dt * (this.move || this.phase === "enter" ? 16 : 7));

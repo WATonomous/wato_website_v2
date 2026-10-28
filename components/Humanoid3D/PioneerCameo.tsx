@@ -14,6 +14,30 @@ const LINES: Record<string, string> = {
     count: "1… 2… 3… 22 DOF per hand!",
 };
 
+/** The scene's other robots (their hover outlines in ProjectHighlights), in illustration coords. */
+const NEIGHBOURS: Record<string, { x: number; y: number; line: string }> = {
+    "/projects/eve": {
+        x: 1650,
+        y: 1300,
+        line: "That's Eve, our self-driving car 🚗",
+    },
+    "/projects/rover": {
+        x: 960,
+        y: 1760,
+        line: "Our rover! Off to the University Rover Challenge 🛞",
+    },
+    "/projects/micro": {
+        x: 2550,
+        y: 2100,
+        line: "Micro: 1:10 scale and it races 🏁",
+    },
+    "/projects/humanoid": {
+        x: 2150,
+        y: 1030,
+        line: "Hey, that's me! In 2D 👀",
+    },
+};
+
 /**
  * Pioneer stepping into the landing-page illustration. Rendered on a transparent canvas over the
  * video; it ignores pointer events itself and listens on the window so the scene's links still work.
@@ -41,12 +65,15 @@ const PioneerCameo = () => {
         let cameo: Cameo | undefined;
         let cancelled = false;
         let hovering = false;
+        let pointing: string | null = null;
         let move: string | undefined;
         let arrived = false;
         let arriveTimer = 0;
         const pick = () =>
             hovering
                 ? LINES.hover
+                : pointing
+                ? NEIGHBOURS[pointing].line
                 : move
                 ? LINES[move] ?? null
                 : arrived
@@ -98,11 +125,35 @@ const PioneerCameo = () => {
         };
         window.addEventListener("click", onClick, true);
 
+        // Point at whichever robot in the scene the visitor is hovering.
+        const neighbourOf = (e: Event) => {
+            const a = (e.target as Element | null)?.closest?.("a[href]");
+            const href = a?.getAttribute("href");
+            return href && NEIGHBOURS[href] ? href : null;
+        };
+        const onOver = (e: PointerEvent) => {
+            const n = neighbourOf(e);
+            if (!n || n === pointing) return;
+            pointing = n;
+            cameoRef.current?.pointAt(NEIGHBOURS[n]);
+            setLine(pick());
+        };
+        const onOut = (e: PointerEvent) => {
+            if (!pointing || neighbourOf(e) !== pointing) return;
+            pointing = null;
+            cameoRef.current?.pointAt(null);
+            setLine(pick());
+        };
+        document.addEventListener("pointerover", onOver);
+        document.addEventListener("pointerout", onOut);
+
         return () => {
             cancelled = true;
             window.clearTimeout(start);
             window.clearTimeout(arriveTimer);
             window.removeEventListener("click", onClick, true);
+            document.removeEventListener("pointerover", onOver);
+            document.removeEventListener("pointerout", onOut);
             document.body.style.cursor = "";
             cameo?.dispose();
         };
