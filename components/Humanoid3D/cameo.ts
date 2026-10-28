@@ -124,6 +124,8 @@ export class Cameo {
         })
     );
     private ground!: THREE.Mesh;
+    private sideLights: THREE.Light[] = [];
+    private peekLights: [THREE.Light, number][] = [];
     private reducedMotion: boolean;
 
     constructor(
@@ -165,11 +167,29 @@ export class Cameo {
             far: 10,
         });
         this.scene.add(key);
+        this.sideLights.push(key);
         const lantern = new THREE.DirectionalLight(0x66ddc8, 1.4);
         this.lantern = lantern;
         lantern.position.set(-2, 4, 1.5);
         this.scene.add(lantern);
-        this.scene.add(new THREE.HemisphereLight(0xbfd8e0, 0x2a2018, 1.1));
+        const sky = new THREE.HemisphereLight(0xbfd8e0, 0x2a2018, 1.1);
+        this.scene.add(sky);
+        this.sideLights.push(lantern, sky);
+
+        // The peeking Pioneer's own light, matched to the drawing: the teal lantern hanging just
+        // above-left of it is the key, the warm shop window behind-right gives a rim, and the shade
+        // under the overhang keeps the fill low. Only switched on for its render pass.
+        const peekTarget = new THREE.Object3D();
+        peekTarget.position.set(PEEK_X, 1.2, 0);
+        this.scene.add(peekTarget);
+        const peekKey = new THREE.DirectionalLight(0xaacfd2, 0);
+        peekKey.position.set(PEEK_X - 1.6, 2.6, 1.2);
+        const peekRim = new THREE.DirectionalLight(0xffb36b, 0);
+        peekRim.position.set(PEEK_X + 2, 1.8, -1.5);
+        const peekFill = new THREE.HemisphereLight(0x6f8f99, 0x1a1a1c, 0);
+        for (const l of [peekKey, peekRim]) l.target = peekTarget;
+        this.scene.add(peekKey, peekRim, peekFill);
+        this.peekLights.push([peekKey, 2.6], [peekRim, 1.6], [peekFill, 0.7]);
 
         const ground = new THREE.Mesh(
             new THREE.PlaneGeometry(12, 6),
@@ -221,9 +241,8 @@ export class Cameo {
         };
         for (const m of peek.meshes) {
             const mat = behindCar(makeComicMaterial(this.comicUniforms));
-            // It stands in the shop overhang's shade under the teal lantern: tint it to the
-            // drawing's cool grey (the drawn robot averages ~rgb(106,132,134)).
-            (mat as THREE.MeshToonMaterial).color.setRGB(0.34, 0.48, 0.62);
+            // Painted a touch cooler, like the drawing's grey (its own lights do the rest).
+            (mat as THREE.MeshToonMaterial).color.setRGB(0.52, 0.6, 0.64);
             m.material = mat;
             m.castShadow = false;
             this.mats.push(mat);
@@ -619,7 +638,12 @@ export class Cameo {
             this.ground.visible = false;
             this.renderer.clear(false, true, true);
             this.renderer.render(this.maskScene, this.maskCam);
+            const saved = this.sideLights.map((l) => l.intensity);
+            this.sideLights.forEach((l) => (l.intensity = 0));
+            this.peekLights.forEach(([l, i]) => (l.intensity = i));
             this.renderer.render(this.scene, this.peekCam);
+            this.sideLights.forEach((l, i) => (l.intensity = saved[i]));
+            this.peekLights.forEach(([l]) => (l.intensity = 0));
             robot.hips.visible = true;
             this.ground.visible = true;
         }
