@@ -4,6 +4,7 @@ import ContentPane from "../../components/ContentPane";
 import Hero from "../../components/Hero";
 import CTASection from "../../components/CTASection";
 import MemberCard, { MemberCardProps } from "../../components/MemberCard";
+import PlushieShowcase from "../../components/Plushie/PlushieShowcase";
 import { SponsorCardProps } from "../../components/Sponsor/SponsorCard";
 
 import wilson from "../../public/imgs/headshots/Wilson_Cheng - Wilson Cheng.jpeg";
@@ -198,6 +199,8 @@ const Humanoid = () => {
           </video>
         </div>
       </div>
+
+      <PlushieShowcase />
 
       <div className="relative flex flex-col items-center bg-black bg-opacity-90 py-32 lg:bg-opacity-80">
         <div className="relative z-10 flex w-full max-w-[95rem] flex-col items-center px-8 text-center text-white md:px-16 lg:w-[85vw] lg:px-0">
