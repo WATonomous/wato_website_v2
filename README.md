@@ -13,6 +13,8 @@
 
 WATonomous is proving that students can change the world of autonomous vehicles. If you are not a developer and would just like to add content to the site, feel free to skip the "For Developers" sections.
 
+Before opening a pull request, read [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## How-Tos
 
 ### Creating a Job Posting
