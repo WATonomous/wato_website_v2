@@ -51,17 +51,24 @@ Most common markdown syntax is supported, refer to the [documentation](https://w
 
 ### Creating a Blog Post
 
-Similar to a Job Posting, create a blog post by putting markdown in the `/static/blogs` folder.
+Similar to a Job Posting, create a blog post by putting a markdown file in the `/static/blogs` folder.
 
-Blog metadata is a little more involved. The following headers **must be present**:
+The file name becomes the post's URL: `static/blogs/my-first-post.md` is published at `/blogs/my-first-post`. Use lowercase words separated by hyphens, and only put `.md` files in this folder (any other file, even a hidden one like `.DS_Store`, breaks the build).
+
+Blog metadata is a little more involved. The following headers **must be present**, or the build fails and the site won't deploy:
 
 - **title:** The name of the blog post
-- **date:** The date the post was created, *please* have it in the format `MMMM DD YYYY`
-- **image:** All posts must have an image associated with them. This will be the file path relative to the `public` folder. e.g. `/imgs/blog-01-image.png`
-- **description:** A short blurb about the post. The user will see this before clicking to view the full thing
-- **tags:** A *list* of tags you want associated with the post
-- **authors:** A *list* the authors of the post. Even if there is one author place, place them in the list.
-- **spotlight:** Our blog has a special spotlight i.e. *featured* section. `true` will place this post in it, and `false` will not.
+- **date:** The date the post was published, *please* have it in the format `MMMM DD YYYY` and **always wrap it in quotes**, e.g. `'March 17 2023'`. An unquoted date like `2023-03-17` breaks the build, and a format like `17/03/2023` builds but puts the post in an unpredictable spot. The date is shown exactly as you type it, and posts are sorted by it, newest first.
+- **image:** All posts must have an image associated with them. It's the picture on the post's card and the background of the post's header. This will be the file path relative to the `public` folder, starting with a `/`. e.g. `/imgs/blog-01.png`
+- **tags:** A *list* of tags you want associated with the post. Even if there is only one tag, place it in a list.
+- **authors:** A *list* of the authors of the post. Even if there is one author, place them in the list. Cards only show the first author; the post's own page lists all of them.
+
+These headers are optional:
+
+- **description:** A short blurb about the post. The user will see this before clicking to view the full thing. The build passes without it, but please include it, or the post's card will have no summary.
+- **spotlight:** Not used by the site right now, so `true` and `false` do the same thing. You can leave it out.
+
+The top of `/blogs` is decided only by `date`: the newest post becomes the big header, and the three newest posts appear under **Featured**. Every post appears under **All Blogs**.
 
 Below is an example of a valid header:
 
@@ -76,6 +83,10 @@ authors: ['Miguel de Cervantes']
 spotlight: true
 ---
 ```
+
+After this header block, write the post in markdown. Tables and strikethrough (`~~text~~`) aren't supported, and raw HTML is removed. For pictures, see [Using Images in Markdown](#using-images-in-markdown).
+
+To preview your post, run `npm run dev` and open `http://localhost:3000/blogs/<file name without .md>`, e.g. `http://localhost:3000/blogs/my-first-post`. Check `http://localhost:3000/blogs` as well, since a header mistake can break either page. Then run `npm run build` to make sure the site still builds.
 
 ### Using Images in Markdown
 
@@ -95,11 +106,15 @@ The **URL** can be in one of two formats. If using an image from the internet, s
 
 If you have an image on your computer, first place your image in `public/imgs`. This is where *all* images on the website should be placed.
 
-Then refer to the file name through its path including `public`. e.g.:
+Then refer to it by its path from the `public` folder, starting with a `/` and **without** `public` in it. Everything in `public` is served from the root of the site, so `public/imgs/team.jpg` lives at `/imgs/team.jpg`. e.g.:
 
 ```md
-![The WATonomous Team Group Picture](public/imgs/team.jpg)
+![The WATonomous Team Group Picture](/imgs/team.jpg)
 ```
+
+> Don't write `public/imgs/team.jpg` or `imgs/team.jpg`. Both build without errors but show a broken image on the site, because the browser looks for them relative to the page (e.g. `/blogs/public/imgs/team.jpg`).
+
+Raw HTML is removed from markdown, so you can't use an `<img>` tag to resize an image. Crop or resize the file itself before adding it.
 
 ### Adding New Members to the Member List
 
